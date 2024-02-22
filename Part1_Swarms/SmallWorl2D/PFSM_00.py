@@ -107,8 +107,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                 b.knows.set_state(current) # I've been in one!
             else:
                 neigh=s.nearby(i,type(b),s.R)
-                if neigh > 1:
-                    current = min(neigh.soul[-1].getCommunications())
+                current = min(neigh.soul[-1].getCommunications())
                 for n in neigh:
                     current=n.knows.tell_state()
                     if n.getSize() > self.size:
