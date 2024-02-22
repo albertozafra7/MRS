@@ -775,6 +775,7 @@ class AniBody(MoBody): # An Animated (Moving) Body
             s.update()
 
 class Mobot(AniBody): # A member of the swarm of mobile robots; there should be many
+
     def __init__(self,space,name,vertices=[],pos=0,th=0,area=0,fc=0,v=0,w=0,vth=0,v_max=0,w_max=0,v_min=0,showtrail=False):
         if len(vertices)==0:
             vertices=[(2,0),(0,0.5),(0,-0.5)]
@@ -786,6 +787,8 @@ class Mobot(AniBody): # A member of the swarm of mobile robots; there should be 
             B=uniform(0,0.5*G) # green-ish
             fc=(R,G,B)
         super().__init__(space,name,vertices,pos,th,area,fc,v,w,vth,v_max,w_max,v_min,showtrail)
+    
+        
 
 class Killer(AniBody): # Chases Mobots; might be more than one, collaborating or not
     def __init__(self,space,name,vertices=[],pos=0,th=0,area=0,fc=0,v=0,w=0,vth=0,v_max=0,w_max=0,v_min=0,showtrail=False):

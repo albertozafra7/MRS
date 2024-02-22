@@ -12,9 +12,12 @@ import numpy as np
 
 from SmallWorl2D import Space, KPIdataset, Obstacle, Nest, Mobot, Soul, GoTo, Knowledge
 
+time_limit = 60
+
 ## A couple of functions related to quadrants
 
 def qdrnt(body): # in which quadrant am I?
+    """ Quadrant identifier """
     if body.pos.x>0:
         if body.pos.y>0:
             return 1
@@ -76,39 +79,74 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
     """ This is not what is actually required,
         it merely makes robots stay by their discovered Nest (the Demo in the course slides)
     """
+    
+    # Modifications for the Nest program
+    nestSize = [0.0,0.0] # The size of the nest that we have info
+    ctn_comm = 0
+    last_id = 0
+
 
     def __init__(self,body,T=0): # YOU CAN HAVE DIFFERENT T, etc, IF YOU WISH
         GoToZ(body,T) # requires a GoToZ soul in the same body
         self.GoToZ=body.souls[-1] # this way it knows how to call it
+        self.size = -1
         MyState(body) # this Soul needs a Mind in its Body to work
         super().__init__(body,T)
 
     def update(self):
         if super().update():
             current=self.body.knows.tell_state()
-            if current==0:
-                b=self.body
-                i=b.index()
-                s=b.space
-                if s.incontact(i,Nest):
-                    current=qdrnt(b)
-                    b.knows.set_state(current) # I've been in one!
-                else:
-                    neigh=s.nearby(i,type(b),s.R)
-                    for n in neigh:
-                        current=n.knows.tell_state()
-                        if current>0:
-                            b.knows.set_state(current) # If some neigh is aware of Nests, then so I am
-                            break
-                if current>0: # changes color and set destination to quadrant
-                    b.fc=cmykdrn(current) # this is NOT the usual way to show a soul, but it looks nice here
-                    self.GoToZ.set_dest(center(s,current))
+            # if current==0:  # If we haven't detected any nest
+            b=self.body
+            i=b.index()
+            s=b.space
+            nest = s.incontact(i,Nest)
+            if nest and nest.area > self.size:
+                self.size = nest.area
+                current=qdrnt(b)
+                b.knows.set_state(current) # I've been in one!
+            else:
+                neigh=s.nearby(i,type(b),s.R)
+                if neigh > 1:
+                    current = min(neigh.soul[-1].getCommunications())
+                for n in neigh:
+                    current=n.knows.tell_state()
+                    if n.getSize() > self.size:
+                        self.size = n.soul[-1].getSize()
+                        b.knows.set_state(current) # If some neigh is aware of Nests, then so I am
+                        break
+            if current>0: # changes color and set destination to quadrant
+                b.fc=cmykdrn(current) # this is NOT the usual way to show a soul, but it looks nice here
+                self.GoToZ.set_dest(center(s,current))
+
+                
+            
             return True
         else: return False
-
+    
+    # Modifications for the Nest program
+    def updateSize(self,size):
+        self.nestSize = size
+    
+    def getSize(self):
+        return self.nestSize
+    
+    def getCommunications(self):
+        return self.ctn_comm
+    
+    def incrComm(self):
+        self.ctn_comm = self.ctn_comm + 1
+    
+    def getLastId(self):
+        return self.last_id
+    
+    def updateLastId(self,id):
+        self.last_id = id
 ## MAIN
 
 def init():
+    
+    global time_limit
 
     ## Create Data Structures
     name='BiB_'+strftime("%Y%m%d%H%M", localtime())
@@ -181,5 +219,5 @@ while not end: # THE loop
     KPI[1]/=NM
     KPI[2]/=NM
     s.KPIds.update(KPI)
-    end=s.has_been_closed() or s.KPIds.KPI[1]==0 or s.KPIds.KPI[2]==s.KPIds.KPI[1] or s.time>60
+    end=s.has_been_closed() or s.KPIds.KPI[1]==0 or s.KPIds.KPI[2]==s.KPIds.KPI[1] or s.time>time_limit
 s.close()
