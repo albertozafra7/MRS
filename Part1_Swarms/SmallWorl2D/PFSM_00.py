@@ -72,7 +72,7 @@ class MyState(Knowledge): # CHANGE FOR YOURS
         0 when no Nest known
     """
 
-    def __init__(self,body,qdrnt=[-1.0,-1.0,-1.0,-1.0]):
+    def __init__(self,body,qdrnt=np.zeros([4])):
         super().__init__(body,state=qdrnt)
 
 class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
@@ -81,14 +81,13 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
     """
     
     # Modifications for the Nest program
-    nestSize = [0.0,0.0] # The size of the nest that we have info
 
 
     def __init__(self,body,T=0): # YOU CAN HAVE DIFFERENT T, etc, IF YOU WISH
         GoToZ(body,T) # requires a GoToZ soul in the same body
         self.GoToZ=body.souls[-1] # this way it knows how to call it
-        self.size = -1
-        self.last_id = -1
+        self.t_ini = -1
+        self.in_nest = True
         MyState(body) # this Soul needs a Mind in its Body to work
         super().__init__(body,T)
 
@@ -97,29 +96,42 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
             current=self.body.knows.tell_state()
             # if current==0:  # If we haven't detected any nest
             b=self.body
+            k=b.knows
             i=b.index()
             s=b.space
             nest = s.incontact(i,Nest)
-            if nest and nest.area > self.size:
-                self.size = nest.area
-                current=qdrnt(b)
+            if nest and not self.in_nest:
+                self.t_ini = s.time
+            elif not nest and self.in_nest and self.t_ini != -1:
+                t_total = s.time - self.t_ini
+                factor = 0.8
+                current[qdrnt(b)] = current[qdrnt(b)]*factor + t_total*(1-factor)
                 b.knows.set_state(current) # I've been in one!
-            else:
-                neighs=s.nearby(i,type(b),s.R)
-                neigh = min(neighs[:].knows.tell_communications())
+                comm = np.zeros([4])
+                comm[qdrnt(b)] = 1
+                k.sum_communications(comm)
                 
-                # for n in neigh:
-                #     current=n.knows.tell_state()
-                #     if n.getSize() > self.size:
-                #         self.size = n.soul[-1].getSize()
-                #         b.knows.set_state(current) # If some neigh is aware of Nests, then so I am
-                #         break
-            if current>0: # changes color and set destination to quadrant
-                b.fc=cmykdrn(current) # this is NOT the usual way to show a soul, but it looks nice here
-                self.GoToZ.set_dest(center(s,current))
+            else: # Communication
+                neigh=s.nearby(i,type(b),s.R)   # We get the neighbours
+                vals = np.zeros([4])        # Size aux
+                comms = np.zeros([4])
+                for n in neigh:                 # We do the mean of the info of all neigh
+                    vals += n.knows.tell_state() #* n.knows.tell_communications()
+                    comms = np.where(n.knows.tell_state() != 0, comms+1, comms)
+                
+                opinions = k.tell_communications() + comms
+                opinions = np.where(opinions == 0, 1, opinions)
+
+                current = (current*k.tell_communications() + vals) / opinions
+                k.set_state(current)
+                k.sum_communications(comms)
+
+            if current.any(): # changes color and set destination to quadrant
+                b.fc=cmykdrn(np.argmax(current)) # this is NOT the usual way to show a soul, but it looks nice here
+                self.GoToZ.set_dest(center(s,np.argmax(current)))
 
                 
-            
+            self.in_nest = nest
             return True
         else: return False
     
@@ -214,7 +226,7 @@ while not end: # THE loop
         if b.on:
             if isinstance(b,Mobot):
                 KPI[1] += 1
-                if b.knows.tell_state()>0: KPI[2] += 1
+                if b.knows.tell_state().all(): KPI[2] += 1
     KPI[1]/=NM
     KPI[2]/=NM
     s.KPIds.update(KPI)

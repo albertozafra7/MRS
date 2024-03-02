@@ -114,9 +114,15 @@ class Space: # a rectangle populated by Body's
     def step(self):
         """ Advance one step of simulation time """
         self.time+=self.dt
+        vals = np.zeros([4])
+        opinions = np.zeros([4])
         for b in self.bodies: # movement update                      
             if isinstance(b,MoBody):
+                vals += b.knows.tell_state()
+                opinions += 1
                 b.update()
+        opinions = np.where(opinions == 0, 1, opinions)
+        print(np.round(vals/opinions,2))
         self.update_dist()
         self.update_conn()
         if self.SR>0:
@@ -924,7 +930,7 @@ class Knowledge: # What a Soul knows
     def __init__(self,body,state='idle'):
         self.body=body
         self.state=state
-        self.ctn_comm=0
+        self.ctn_comm=np.zeros([4])
         body.knows=self
 
     def set_state(self,state):
@@ -933,8 +939,8 @@ class Knowledge: # What a Soul knows
     def tell_state(self):
         return self.state
     
-    def up_communications(self,comm):
-        self.ctn_comm += 1
+    def sum_communications(self, num):
+        self.ctn_comm += num
 
     def tell_communications(self):
         return self.ctn_comm
