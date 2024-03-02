@@ -119,7 +119,7 @@ class Space: # a rectangle populated by Body's
         for b in self.bodies: # movement update                      
             if isinstance(b,MoBody):
                 vals += b.knows.tell_state()
-                opinions += 1
+                opinions += b.knows.tell_communications()
                 b.update()
         opinions = np.where(opinions == 0, 1, opinions)
         print(np.round(vals/opinions,2))
@@ -939,8 +939,8 @@ class Knowledge: # What a Soul knows
     def tell_state(self):
         return self.state
     
-    def sum_communications(self, num):
-        self.ctn_comm += num
+    def set_communications(self, num):
+        self.ctn_comm = num
 
     def tell_communications(self):
         return self.ctn_comm

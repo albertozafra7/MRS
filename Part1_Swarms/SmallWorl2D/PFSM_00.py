@@ -107,9 +107,9 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                 factor = 0.8
                 current[qdrnt(b)] = current[qdrnt(b)]*factor + t_total*(1-factor)
                 b.knows.set_state(current) # I've been in one!
-                comm = np.zeros([4])
+                comm = b.knows.tell_communications()
                 comm[qdrnt(b)] = 1
-                k.sum_communications(comm)
+                k.set_communications(comm)
                 
             else: # Communication
                 neigh=s.nearby(i,type(b),s.R)   # We get the neighbours
@@ -120,11 +120,12 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                     comms = np.where(n.knows.tell_state() != 0, comms+1, comms)
                 
                 opinions = k.tell_communications() + comms
-                opinions = np.where(opinions == 0, 1, opinions)
+                opinionsD = np.where(opinions == 0, 1, opinions)
 
-                current = (current*k.tell_communications() + vals) / opinions
+                current = (current + vals) / opinionsD
                 k.set_state(current)
-                k.sum_communications(comms)
+                opinions = np.where(opinions > 1, 1, opinions)
+                k.set_communications(opinions)
 
             if current.any(): # changes color and set destination to quadrant
                 b.fc=cmykdrn(np.argmax(current)) # this is NOT the usual way to show a soul, but it looks nice here
