@@ -60,7 +60,7 @@ class GoToZ(GoTo):
     def update(self):
         """ Relatively more or less often than random changes of direction, it points approx. towards the destination """
         if super().update():
-            if not self.destination==None and random()<0.5*self.p: # 0.5? for "relatively more or less" often... ADJUST?
+            if not self.destination==None and random()<0.5*self.p: # 0.5? for "relatively more or less" often... ADJUST?    
                 arrow=Point2D(self.destination.x-self.body.pos.x,self.destination.y-self.body.pos.y)
                 self.body.teleport(th=pipi(uniform(0.9,1.1)*arrow.a)) # +/- 0.1? for "approx." ADJUST?
             return True
@@ -72,7 +72,7 @@ class MyState(Knowledge): # CHANGE FOR YOURS
         0 when no Nest known
     """
 
-    def __init__(self,body,qdrnt=0):
+    def __init__(self,body,qdrnt=[-1.0,-1.0,-1.0,-1.0]):
         super().__init__(body,state=qdrnt)
 
 class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
@@ -82,14 +82,13 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
     
     # Modifications for the Nest program
     nestSize = [0.0,0.0] # The size of the nest that we have info
-    ctn_comm = 0
-    last_id = 0
 
 
     def __init__(self,body,T=0): # YOU CAN HAVE DIFFERENT T, etc, IF YOU WISH
         GoToZ(body,T) # requires a GoToZ soul in the same body
         self.GoToZ=body.souls[-1] # this way it knows how to call it
         self.size = -1
+        self.last_id = -1
         MyState(body) # this Soul needs a Mind in its Body to work
         super().__init__(body,T)
 
@@ -106,14 +105,15 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                 current=qdrnt(b)
                 b.knows.set_state(current) # I've been in one!
             else:
-                neigh=s.nearby(i,type(b),s.R)
-                current = min(neigh.soul[-1].getCommunications())
-                for n in neigh:
-                    current=n.knows.tell_state()
-                    if n.getSize() > self.size:
-                        self.size = n.soul[-1].getSize()
-                        b.knows.set_state(current) # If some neigh is aware of Nests, then so I am
-                        break
+                neighs=s.nearby(i,type(b),s.R)
+                neigh = min(neighs[:].knows.tell_communications())
+                
+                # for n in neigh:
+                #     current=n.knows.tell_state()
+                #     if n.getSize() > self.size:
+                #         self.size = n.soul[-1].getSize()
+                #         b.knows.set_state(current) # If some neigh is aware of Nests, then so I am
+                #         break
             if current>0: # changes color and set destination to quadrant
                 b.fc=cmykdrn(current) # this is NOT the usual way to show a soul, but it looks nice here
                 self.GoToZ.set_dest(center(s,current))

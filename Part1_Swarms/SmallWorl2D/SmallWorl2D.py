@@ -924,6 +924,7 @@ class Knowledge: # What a Soul knows
     def __init__(self,body,state='idle'):
         self.body=body
         self.state=state
+        self.ctn_comm=0
         body.knows=self
 
     def set_state(self,state):
@@ -931,6 +932,12 @@ class Knowledge: # What a Soul knows
 
     def tell_state(self):
         return self.state
+    
+    def up_communications(self,comm):
+        self.ctn_comm += 1
+
+    def tell_communications(self):
+        return self.ctn_comm
 
 ## MAIN: a meaningless demo of almost everything (and a typical pattern for the main code)
 
