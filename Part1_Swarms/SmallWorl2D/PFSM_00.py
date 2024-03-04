@@ -103,8 +103,9 @@ class GoToZ(GoTo):
         self.where=destination
         self.nw = 'keepgoing'
         self.obstalikes=Obstacle
-        self.bumper=1.25
-        # self.p=0.01
+        self.bumper=1.75
+        self.p=0.01
+        self.OEF=0.5
 
     def update(self):
         """ Relatively more or less often than random changes of direction, it points approx. towards the destination """

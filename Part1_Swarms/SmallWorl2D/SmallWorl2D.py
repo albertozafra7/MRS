@@ -937,9 +937,9 @@ class GoTo(Soul):
                     misorientation=pipi(arrow.a-b.th) # turn almost completely without advance, then advance to arrive on time
                     w=self.Kp*misorientation # control P of w
                     v=arrow.r/max((self.when-self.time),s.dt)*max(0,cos(misorientation)**self.cosexp) # control JIT of v 
-                    if self.where != None: b.cmd_vel(v,w)
-                    elif b.v>0: b.cmd_vel(max(v,b.v),w) # this is obstacle avoidance when there is no where to go, and not stopped
-                    # if b.v>0: b.cmd_vel(max(v,b.v),w) # this is obstacle avoidance when there is no where to go, and not stopped
+                    # if self.where != None: b.cmd_vel(v,w)
+                    # elif b.v>0: b.cmd_vel(max(v,b.v),w) # this is obstacle avoidance when there is no where to go, and not stopped
+                    if b.v>0: b.cmd_vel(max(v,b.v),w) # this is obstacle avoidance when there is no where to go, and not stopped
             return True
         else: return False
 
