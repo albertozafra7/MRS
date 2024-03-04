@@ -9,12 +9,16 @@ from shapely.geometry import Point
 from point2d import Point2D 
 from gadgETs import pipi
 import numpy as np
+import random
 
 from SmallWorl2D import Space, KPIdataset, Obstacle, Nest, Mobot, Soul, GoTo, Knowledge
 
 time_limit = 60
 
 ## A couple of functions related to quadrants
+
+def sigmoid(x):
+    return 1 / (1 + np.exp((2000-x)*0.005))
 
 def qdrnt(body): # in which quadrant am I?
     """ Quadrant identifier """
@@ -28,6 +32,18 @@ def qdrnt(body): # in which quadrant am I?
             return 2
         else:
             return 3
+        
+def quadrant(i): # in which quadrant am I?
+    """ Quadrant identifier """
+    
+    if i == 0:
+        return 3
+    elif i == 1:
+        return 1
+    elif i == 2:
+        return 2
+    else:
+        return 4
 
 def center(s, qdrnt): # a destination to go towards a quadrant
     if qdrnt==1:
@@ -57,10 +73,20 @@ class GoToZ(GoTo):
         """ To go towards Body b: GoToZ.set_dest(b.pos) """
         self.destination=destination # Point or None
 
+    def stop(self):
+        """ stop """
+        self.nw = 'stop'
+        # self.destination = None
+
+    def go_to_nest(self,destination):
+        """ To go towards the biggest nest in straight line """
+        self.destination=destination
+        self.nw = 'keepgoing'
+
     def update(self):
         """ Relatively more or less often than random changes of direction, it points approx. towards the destination """
         if super().update():
-            if not self.destination==None and random()<0.5*self.p: # 0.5? for "relatively more or less" often... ADJUST?    
+            if not self.destination==None and random.random()<0.5*self.p: # 0.5? for "relatively more or less" often... ADJUST?    
                 arrow=Point2D(self.destination.x-self.body.pos.x,self.destination.y-self.body.pos.y)
                 self.body.teleport(th=pipi(uniform(0.9,1.1)*arrow.a)) # +/- 0.1? for "approx." ADJUST?
             return True
@@ -88,6 +114,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
         self.GoToZ=body.souls[-1] # this way it knows how to call it
         self.t_ini = -1
         self.in_nest = True
+        self.update_rate = 10
         MyState(body) # this Soul needs a Mind in its Body to work
         super().__init__(body,T)
 
@@ -99,39 +126,79 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
             k=b.knows
             i=b.index()
             s=b.space
+            my_comm = k.tell_communications()
             nest = s.incontact(i,Nest)
+                
             if nest and not self.in_nest:
                 self.t_ini = s.time
+                print(qdrnt(b))
+                print(nest.area)
             elif not nest and self.in_nest and self.t_ini != -1:
                 t_total = s.time - self.t_ini
-                factor = 0.8
-                current[qdrnt(b)] = current[qdrnt(b)]*factor + t_total*(1-factor)
+
+                current[qdrnt(b)] = np.maximum(current[qdrnt(b)],t_total)
+                
                 b.knows.set_state(current) # I've been in one!
-                comm = b.knows.tell_communications()
+                comm = np.zeros([4])
                 comm[qdrnt(b)] = 1
-                k.set_communications(comm)
+                k.sum_communications(comm)
                 
             else: # Communication
                 neigh=s.nearby(i,type(b),s.R)   # We get the neighbours
-                vals = np.zeros([4])        # Size aux
+                # vals = np.zeros([4])        # Size aux
                 comms = np.zeros([4])
                 for n in neigh:                 # We do the mean of the info of all neigh
-                    vals += n.knows.tell_state() #* n.knows.tell_communications()
+                    # vals += n.knows.tell_state()
                     comms = np.where(n.knows.tell_state() != 0, comms+1, comms)
-                
-                opinions = k.tell_communications() + comms
-                opinionsD = np.where(opinions == 0, 1, opinions)
+                    current = np.maximum(current,n.knows.tell_state())
 
-                current = (current + vals) / opinionsD
+                # my_comm = np.log(my_comm+1)
+                # opinions = my_comm + comms
+                # opinions = np.where(opinions == 0, 1, opinions)
+
                 k.set_state(current)
-                opinions = np.where(opinions > 1, 1, opinions)
-                k.set_communications(opinions)
+                k.sum_communications(comms)
 
-            if current.any(): # changes color and set destination to quadrant
+            if k.tell_state_action() != "nested" and k.tell_state_action() != "nesting" and current.any(): # changes color and set destination to quadrant
                 b.fc=cmykdrn(np.argmax(current)) # this is NOT the usual way to show a soul, but it looks nice here
-                self.GoToZ.set_dest(center(s,np.argmax(current)))
 
-                
+
+            # state machine
+            if(k.tell_state_action() == "nesting" and nest and qdrnt(b)==np.argmax(current)): # If in contact with the biggest nest -> stop
+                k.set_state_action("nested")
+                self.t_ini = -1
+                self.GoToZ.stop()
+                b.fc=(1,1,0.3)      # Yellow
+
+            # Roussian Roulete movement
+            if s.steps%self.update_rate == 0: # Every X iterations we compute the probability to go to the nest or explore
+                if k.tell_state_action() != "nested" and current.any() and random.random() < sigmoid(max(k.tell_communications())): #  Goes to the biggest nest
+                    #self.GoToZ.set_dest(center(s,np.argmax(current)))
+                    
+                    k.set_state_action("nesting")
+                    self.GoToZ.go_to_nest(center(s,quadrant(np.argmax(current))))
+
+                    if np.argmax(current) == 2:
+                        b.fc=(1,0,0.3)      # Red
+                    else:
+                        b.fc=(0.1,1,0.1)    # Green
+
+
+                elif k.tell_state_action() != "nested" and random.random() < 0.02:    # Changes direction each ~30 steps
+                    k.set_state_action("exploring")
+                    self.GoToZ.set_dest(center(s,random.randint(1, 4)))
+                    b.fc=cmykdrn(np.argmax(current))
+            
+            # If nested in the smallest nest
+            if k.tell_state_action() == "nested" and (qdrnt(b)!=np.argmax(current) or random.random() < 0.01):
+                    k.set_state_action("nesting")
+                    self.GoToZ.go_to_nest(center(s,quadrant(np.argmax(current))))
+
+                    if np.argmax(current) == 2:
+                        b.fc=(1,0,0.3)      # Red
+                    else:
+                        b.fc=(0.1,1,0.1)    # Green
+
             self.in_nest = nest
             return True
         else: return False
@@ -170,7 +237,7 @@ def init():
         # 2 Fraction discovered Nest
 
     ## Populate the world
-    NM=50; random()
+    NM=50; random.random()
 
     # two Nests
     i=0

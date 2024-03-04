@@ -27,6 +27,7 @@ import matplotlib.patches as patches
 from matplotlib.animation import FFMpegWriter # requires having ffmpeg installed, from https://ffmpeg.org/
 # Mine imports
 from gadgETs import pipi, voronoi, WUGraph
+from multiprocessing import Process
 
 class Space: # a rectangle populated by Body's
 
@@ -78,6 +79,7 @@ class Space: # a rectangle populated by Body's
         self.time=-self.dt # simulation time (s)
         self.lastime=self.time-self.DRS*self.dt # time of last draw
         self.SR=0 # Number of Steps to Redraw
+        self.steps = 0
         self.bodies=[] # list of Body's in this Space
         self.dist=np.zeros((0,0)) # distances between self.bodies centroids in a symmetric np.matrix
         self.conn={} # a dict where conn[i] is the set of j's such that (i,j) is edge; i, j are AniBody's of the same type in self.bodies
@@ -113,16 +115,32 @@ class Space: # a rectangle populated by Body's
 
     def step(self):
         """ Advance one step of simulation time """
+        self.steps += 1
         self.time+=self.dt
         vals = np.zeros([4])
-        opinions = np.zeros([4])
+        opinions = 0
+        comm = 0
+        exploring = 0
+        nesting = 0
+        nested = 0
+        # p = []
+
         for b in self.bodies: # movement update                      
             if isinstance(b,MoBody):
                 vals += b.knows.tell_state()
-                opinions += b.knows.tell_communications()
+                opinions += 1
+                state_action = b.knows.tell_state_action()
+                comm += np.sum(b.knows.tell_communications())
+                if state_action == "exploring":
+                    exploring+=1
+                elif state_action == "nesting":
+                    nesting+=1
+                elif state_action == "nested":
+                    nested+=1  
                 b.update()
-        opinions = np.where(opinions == 0, 1, opinions)
-        print(np.round(vals/opinions,2))
+            
+        nests = np.round(vals/opinions,2)
+        print("\tPink: {:.4f}\tBlue: {:.4f}\tComms: {:.4f}\tEx: {:.4f}\tNing: {:.4f}\tNed: {:.4f}".format(nests[2],nests[1],(comm/opinions),exploring/opinions,nesting/opinions,nested/opinions),end='\r')
         self.update_dist()
         self.update_conn()
         if self.SR>0:
@@ -894,6 +912,7 @@ class GoTo(Soul):
                 if self.where == None: # might have just become None above
                     arrow=Point2D(0,0)
                     if self.nw=='stop': # reset v and w
+                        #print("stop at nest")
                         b.cmd_vel(v=0,w=0) # this will NOT stop a fUAV (required to set_velim)
                     elif self.nw=='wander': # random changes of w, v_max
                         b.cmd_vel(v=b.v_max)
@@ -904,7 +923,8 @@ class GoTo(Soul):
                         if random()<self.p:
                             b.teleport(th=self.body.th+uniform(-1,1)*pi)
                     elif self.nw=='keepgoing': # keep moving in same direction
-                        b.cmd_vel(w=0)
+                        #print("going to nest")
+                        b.cmd_vel(v=b.v_max,w=0)
                 if self.obstalikes!=None:
                     obs=s.nearby(i,self.obstalikes,r=self.bumper,rng=self.rng)
                     if len(obs):
@@ -930,6 +950,7 @@ class Knowledge: # What a Soul knows
     def __init__(self,body,state='idle'):
         self.body=body
         self.state=state
+        self.state_action = "exploring"
         self.ctn_comm=np.zeros([4])
         body.knows=self
 
@@ -939,11 +960,17 @@ class Knowledge: # What a Soul knows
     def tell_state(self):
         return self.state
     
-    def set_communications(self, num):
-        self.ctn_comm = num
+    def sum_communications(self, num):
+        self.ctn_comm += num
 
     def tell_communications(self):
         return self.ctn_comm
+    
+    def set_state_action(self,state):
+        self.state_action=state
+
+    def tell_state_action(self):
+        return self.state_action
 
 ## MAIN: a meaningless demo of almost everything (and a typical pattern for the main code)
 
