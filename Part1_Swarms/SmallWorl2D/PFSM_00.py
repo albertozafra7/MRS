@@ -18,7 +18,25 @@ time_limit = 60
 ## A couple of functions related to quadrants
 
 def sigmoid(x):
-    return 1 / (1 + np.exp((2000-x)*0.005))
+    # return 1 / (1 + np.exp((2000-x)*0.005))
+    return 1 / (1 + np.exp((1000-x)*0.01))
+
+
+def median_point(point1, point2):
+    
+    """
+    Compute the median point between two points.
+    
+    Args:
+    - point1: Tuple or list containing the coordinates of the first point.
+    - point2: Tuple or list containing the coordinates of the second point.
+    
+    Returns:
+    - Tuple containing the coordinates of the median point.
+    """
+    pointAux = Point((point1.x + point2.x) / 2,(point1.y + point2.y) / 2)
+    
+    return pointAux  # Return the median point as a tuple
 
 def qdrnt(body): # in which quadrant am I?
     """ Quadrant identifier """
@@ -36,14 +54,14 @@ def qdrnt(body): # in which quadrant am I?
 def quadrant(i): # in which quadrant am I?
     """ Quadrant identifier """
     
-    if i == 0:
-        return 3
-    elif i == 1:
+    if i == 0:      # Lower left quadrant
+        return 3    
+    elif i == 1:    # The quadrant with the blue nest (Upper right)
         return 1
-    elif i == 2:
+    elif i == 2:    # The quadrant with the pink nest (Upper left)
         return 2
     else:
-        return 4
+        return 4    # Lower right quadrant
 
 def center(s, qdrnt): # a destination to go towards a quadrant
     if qdrnt==1:
@@ -76,12 +94,17 @@ class GoToZ(GoTo):
     def stop(self):
         """ stop """
         self.nw = 'stop'
-        # self.destination = None
+        self.destination = None
+        self.where=None
 
     def go_to_nest(self,destination):
         """ To go towards the biggest nest in straight line """
         self.destination=destination
+        self.where=destination
         self.nw = 'keepgoing'
+        self.obstalikes=Obstacle
+        self.bumper=1.25
+        # self.p=0.01
 
     def update(self):
         """ Relatively more or less often than random changes of direction, it points approx. towards the destination """
@@ -113,6 +136,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
         GoToZ(body,T) # requires a GoToZ soul in the same body
         self.GoToZ=body.souls[-1] # this way it knows how to call it
         self.t_ini = -1
+        self.p_ini = body.pos
         self.in_nest = True
         self.update_rate = 10
         MyState(body) # this Soul needs a Mind in its Body to work
@@ -129,13 +153,15 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
             my_comm = k.tell_communications()
             nest = s.incontact(i,Nest)
                 
-            if nest and not self.in_nest:
+            if nest and not self.in_nest and k.tell_state_action() != "nested" and k.tell_state_action() != "nesting" :
                 self.t_ini = s.time
-                print(qdrnt(b))
-                print(nest.area)
+                self.p_ini = b.pos
             elif not nest and self.in_nest and self.t_ini != -1:
                 t_total = s.time - self.t_ini
 
+                if t_total > np.max(current[qdrnt(b)]):
+                    k.set_center(median_point(self.p_ini,b.pos)) # We get the center of the nest
+                
                 current[qdrnt(b)] = np.maximum(current[qdrnt(b)],t_total)
                 
                 b.knows.set_state(current) # I've been in one!
@@ -150,7 +176,13 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                 for n in neigh:                 # We do the mean of the info of all neigh
                     # vals += n.knows.tell_state()
                     comms = np.where(n.knows.tell_state() != 0, comms+1, comms)
+                    
+                    if(np.max(current) < np.max(n.knows.tell_state())):  # If our nest isn't the biggest
+                        k.set_center(n.knows.tell_center())                     # We update the center
+                    
                     current = np.maximum(current,n.knows.tell_state())
+
+                    
 
                 # my_comm = np.log(my_comm+1)
                 # opinions = my_comm + comms
@@ -170,13 +202,15 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                 self.GoToZ.stop()
                 b.fc=(1,1,0.3)      # Yellow
 
+            nests_k = np.sum(np.where(my_comm != 0, 1, 0))
+
             # Roussian Roulete movement
             if s.steps%self.update_rate == 0: # Every X iterations we compute the probability to go to the nest or explore
-                if k.tell_state_action() != "nested" and current.any() and random.random() < sigmoid(max(k.tell_communications())): #  Goes to the biggest nest
+                if nests_k>1 and k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest
                     #self.GoToZ.set_dest(center(s,np.argmax(current)))
                     
                     k.set_state_action("nesting")
-                    self.GoToZ.go_to_nest(center(s,quadrant(np.argmax(current))))
+                    self.GoToZ.go_to_nest(k.tell_center())
 
                     if np.argmax(current) == 2:
                         b.fc=(1,0,0.3)      # Red
@@ -184,15 +218,15 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                         b.fc=(0.1,1,0.1)    # Green
 
 
-                elif k.tell_state_action() != "nested" and random.random() < 0.02:    # Changes direction each ~30 steps
+                elif (k.tell_state_action() != "nested" and (random.random() < 0.02)) or (k.tell_state_action() == "exploring" and b.pos.distance(center(s,qdrnt(b))) < 0.5):    # Changes direction each ~30 steps
                     k.set_state_action("exploring")
                     self.GoToZ.set_dest(center(s,random.randint(1, 4)))
                     b.fc=cmykdrn(np.argmax(current))
             
             # If nested in the smallest nest
-            if k.tell_state_action() == "nested" and (qdrnt(b)!=np.argmax(current) or random.random() < 0.01):
+            if k.tell_state_action() == "nested" and qdrnt(b)!=quadrant(np.argmax(current)): #or random.random() < 0.01):
                     k.set_state_action("nesting")
-                    self.GoToZ.go_to_nest(center(s,quadrant(np.argmax(current))))
+                    self.GoToZ.go_to_nest(k.tell_center())
 
                     if np.argmax(current) == 2:
                         b.fc=(1,0,0.3)      # Red
@@ -300,3 +334,4 @@ while not end: # THE loop
     s.KPIds.update(KPI)
     end=s.has_been_closed() or s.KPIds.KPI[1]==0 or s.KPIds.KPI[2]==s.KPIds.KPI[1] or s.time>time_limit
 s.close()
+

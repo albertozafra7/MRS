@@ -27,7 +27,7 @@ import matplotlib.patches as patches
 from matplotlib.animation import FFMpegWriter # requires having ffmpeg installed, from https://ffmpeg.org/
 # Mine imports
 from gadgETs import pipi, voronoi, WUGraph
-from multiprocessing import Process
+from numba import jit, cuda
 
 class Space: # a rectangle populated by Body's
 
@@ -921,7 +921,7 @@ class GoTo(Soul):
                     elif self.nw=='zigzag': # random changes of direction, v_max
                         b.cmd_vel(v=b.v_max,w=0)
                         if random()<self.p:
-                            b.teleport(th=self.body.th+uniform(-1,1)*pi)
+                            b.teleport(th=self.body.th+uniform(0-1,1)*pi)
                     elif self.nw=='keepgoing': # keep moving in same direction
                         #print("going to nest")
                         b.cmd_vel(v=b.v_max,w=0)
@@ -939,6 +939,7 @@ class GoTo(Soul):
                     v=arrow.r/max((self.when-self.time),s.dt)*max(0,cos(misorientation)**self.cosexp) # control JIT of v 
                     if self.where != None: b.cmd_vel(v,w)
                     elif b.v>0: b.cmd_vel(max(v,b.v),w) # this is obstacle avoidance when there is no where to go, and not stopped
+                    # if b.v>0: b.cmd_vel(max(v,b.v),w) # this is obstacle avoidance when there is no where to go, and not stopped
             return True
         else: return False
 
@@ -951,6 +952,7 @@ class Knowledge: # What a Soul knows
         self.body=body
         self.state=state
         self.state_action = "exploring"
+        self.p_center=body.pos
         self.ctn_comm=np.zeros([4])
         body.knows=self
 
@@ -968,9 +970,15 @@ class Knowledge: # What a Soul knows
     
     def set_state_action(self,state):
         self.state_action=state
-
+        
     def tell_state_action(self):
         return self.state_action
+    
+    def set_center(self,center):
+        self.p_center=center
+
+    def tell_center(self):
+        return self.p_center
 
 ## MAIN: a meaningless demo of almost everything (and a typical pattern for the main code)
 
@@ -1059,7 +1067,8 @@ def init():
         log.write("{:d} initial Body's:\n".format(len(s.bodies)))
         for b in s.bodies: log.write(repr(b)+'\n')
 
-if __name__ == '__main__': 
+@jit(target_backend='cuda')
+def mane():
 
     init()
     end=False
@@ -1089,3 +1098,6 @@ if __name__ == '__main__':
         end=s.has_been_closed() or s.KPIds.KPI[1]==0 or s.time>30
     else:
         s.close()
+
+if __name__ == '__main__': 
+    mane()
