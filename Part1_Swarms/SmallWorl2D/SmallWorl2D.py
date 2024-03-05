@@ -1,6 +1,6 @@
 ## SmallWorl2D
 ## Version: 20230923
-## Author: Enrique Teruel (ET) eteruel@unizar.es
+## Author: Alberto Zafra: 876628, Jorge Aranda: 800839 and Enrique Teruel (ET) eteruel@unizar.es
 ## License: CC-BY-SA
 
 ## A typical small_worl2d is a rectangular Space shown in a matplotlib window, with or without limits
@@ -988,7 +988,7 @@ def init():
     name='SW2D_'+strftime("%Y%m%d%H%M", localtime())
     global s, N
     s=Space(name,dt=0.01,DRS=4,R=3,occl=True,ConnCtrl=2,limits='hv',randomseed=0,visual=True,showtrail=True,showconn=True,datxt=True,loginfo=True)
-    KPIdataset(name,s,[0,1],[(0,'.y'),(1,'.r')])
+    KPIdataset(name,s,[1,1,0,0,0,0],[(0,'.m'),(1,'.b'),(2,'.g'),(3,'.y'),(4,'.r'),(5,'.k')])
 
     ## Populate the world
     N=50
@@ -1088,11 +1088,22 @@ def mane():
                     ko+=s.incontact(i,(Killer,Shepherd))
         s.remobodies(ko,'collision')
 
-        KPI=[s.time/(time()-s.t0),0] # KPIs [simulation speed, surviving mobots]
+        KPI=[s.time/(time()-s.t0),0,0,0,0,0] # KPIs [simulation speed, surviving mobots]
         for b in s.bodies:
             if b.on and isinstance(b,Mobot):
                 KPI[1] += 1
-        KPI[1] /= N
+                if b.knows.tell_state_action() == "nested":
+                    KPI[3] += 1
+                    if 2==np.argmax(b.knows.tell_state()):
+                        KPI[2] += 1
+                if b.knows.tell_state_action() == "nesting": KPI[4] += 1
+                if b.knows.tell_state_action() == "exploring": KPI[5] += 1
+        
+        KPI[1]/=N
+        KPI[2]/=N
+        KPI[3]/=N
+        KPI[4]/=N
+        KPI[5]/=N
         s.KPIds.update(KPI)
 
         end=s.has_been_closed() or s.KPIds.KPI[1]==0 or s.time>30

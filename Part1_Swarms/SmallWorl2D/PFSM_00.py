@@ -1,6 +1,6 @@
 ## A solution to the PFSM exercise
-## Version: YYYYMMDD
-## Author: YOU
+## Version: 20240305
+## Author: Alberto Zafra: 876628, Jorge Aranda: 800839
 ## License: CC-BY-SA
 
 from time import time, localtime, strftime
@@ -47,6 +47,19 @@ def qdrnt(body): # in which quadrant am I?
             return 4
     else: 
         if body.pos.y>0:
+            return 2
+        else:
+            return 3
+        
+def qdrnt_pos(pos): # in which quadrant am I?
+    """ Quadrant identifier """
+    if pos.x>0:
+        if pos.y>0:
+            return 1
+        else:
+            return 4
+    else: 
+        if pos.y>0:
             return 2
         else:
             return 3
@@ -102,9 +115,8 @@ class GoToZ(GoTo):
         self.destination=destination
         self.where=destination
         self.nw = 'keepgoing'
-        self.obstalikes=Obstacle
-        self.bumper=1.75
-        self.p=0.01
+        #self.obstalikes=Obstacle
+        self.bumper=3.5
         self.OEF=0.5
 
     def update(self):
@@ -178,7 +190,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                     # vals += n.knows.tell_state()
                     comms = np.where(n.knows.tell_state() != 0, comms+1, comms)
                     
-                    if(np.max(current) < np.max(n.knows.tell_state())):  # If our nest isn't the biggest
+                    if(np.max(current) < np.max(n.knows.tell_state())) or (quadrant(np.argmax(current)) != qdrnt_pos(k.tell_center())):  # If our nest isn't the biggest
                         k.set_center(n.knows.tell_center())                     # We update the center
                     
                     current = np.maximum(current,n.knows.tell_state())
@@ -208,7 +220,8 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
 
             # Roussian Roulete movement
             if s.steps%self.update_rate == 0: # Every X iterations we compute the probability to go to the nest or explore
-                if  k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest
+                if nests_k > 1 and k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest ""nests_k > 1 and"""  
+                #if k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest ""nests_k > 1 and"""  
                     #self.GoToZ.set_dest(center(s,np.argmax(current)))
                     
                     k.set_state_action("nesting")
@@ -235,6 +248,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
                     else:
                         b.fc=(0.1,1,0.1)    # Green
 
+            
             self.in_nest = nest
             return True
         else: return False
@@ -267,10 +281,13 @@ def init():
     name='BiB_'+strftime("%Y%m%d%H%M", localtime())
     global s, NM
     s=Space(name,R=2,limits='hv',visual=True,showconn=True)
-    KPIdataset(name,s,[1,1,0],[(0,'.y'),(1,'.k'),(2,'.g')])
+    KPIdataset(name,s,[1,1,0,0,0,0],[(0,'.m'),(1,'.b'),(2,'.g'),(3,'.y'),(4,'.r'),(5,'.k')])
         # 0 simulation time scale -- recommended "default" KPI
         # 1 Fraction remaining
-        # 2 Fraction discovered Nest
+        # 2 Fraction aggregated Nest
+        # 3 Fraction of Nested
+        # 4 Fraction of Nesting
+        # 5 Fraction of Exploring
 
     ## Populate the world
     NM=50; random.random()
@@ -325,14 +342,22 @@ while not end: # THE loop
             ko+=s.incontact(i,Mobot)
     s.remobodies(ko,'collision')
 
-    KPI=[s.time/(time()-s.t0),0,0] # KPI's computation
+    KPI=[s.time/(time()-s.t0),0,0,0,0,0] # KPI's computation
     for b in s.bodies:
         if b.on:
             if isinstance(b,Mobot):
                 KPI[1] += 1
-                if b.knows.tell_state().all(): KPI[2] += 1
+                if b.knows.tell_state_action() == "nested":
+                    KPI[3] += 1
+                    if 2==np.argmax(b.knows.tell_state()):
+                        KPI[2] += 1
+                if b.knows.tell_state_action() == "nesting": KPI[4] += 1
+                if b.knows.tell_state_action() == "exploring": KPI[5] += 1
     KPI[1]/=NM
     KPI[2]/=NM
+    KPI[3]/=NM
+    KPI[4]/=NM
+    KPI[5]/=NM
     s.KPIds.update(KPI)
     end=s.has_been_closed() or s.KPIds.KPI[1]==0 or s.KPIds.KPI[2]==s.KPIds.KPI[1] or s.time>time_limit
 s.close()
