@@ -18,8 +18,8 @@ time_limit = 60
 ## A couple of functions related to quadrants
 
 def sigmoid(x):
-    # return 1 / (1 + np.exp((2000-x)*0.005))
-    return 1 / (1 + np.exp((1000-x)*0.01))
+    return 1 / (1 + np.exp((2000-x)*0.005))
+    #return 1 / (1 + np.exp((1000-x)*0.01))
 
 
 def median_point(point1, point2):
@@ -83,7 +83,7 @@ class GoToZ(GoTo):
     """ A specialization of the GoTo Soul that zigzags randomly, perhaps towards a destination. """
 
     def __init__(self,body,T):
-        super().__init__(body,T,nw='zigzag',obstalikes=Obstacle,bumper=body.r_encl*10,p=0.001) # Mobots only avoid Obstacles
+        super().__init__(body,T,nw='keepgoing',obstalikes=Obstacle,bumper=body.r_encl*2.5,p=0.001,OEF=0.15) # Mobots only avoid Obstacles
         self.destination=None # Point or None
 
     def set_dest(self,destination):
@@ -194,7 +194,8 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
 
             if k.tell_state_action() != "nested" and k.tell_state_action() != "nesting" and current.any(): # changes color and set destination to quadrant
                 b.fc=cmykdrn(np.argmax(current)) # this is NOT the usual way to show a soul, but it looks nice here
-
+                k.set_state_action("exploring")
+                self.GoToZ.set_dest(center(s,random.randint(1, 4)))
 
             # state machine
             if(k.tell_state_action() == "nesting" and nest and qdrnt(b)==np.argmax(current)): # If in contact with the biggest nest -> stop
@@ -207,7 +208,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
 
             # Roussian Roulete movement
             if s.steps%self.update_rate == 0: # Every X iterations we compute the probability to go to the nest or explore
-                if nests_k>1 and k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest
+                if  k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest
                     #self.GoToZ.set_dest(center(s,np.argmax(current)))
                     
                     k.set_state_action("nesting")
