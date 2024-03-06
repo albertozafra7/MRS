@@ -116,8 +116,8 @@ class GoToZ(GoTo):
         self.where=destination
         self.nw = 'keepgoing'
         #self.obstalikes=Obstacle
-        self.bumper=3.5
-        self.OEF=0.5
+        self.bumper=4.5
+        self.OEF=0.75
 
     def update(self):
         """ Relatively more or less often than random changes of direction, it points approx. towards the destination """
@@ -206,8 +206,8 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
 
             if k.tell_state_action() != "nested" and k.tell_state_action() != "nesting" and current.any(): # changes color and set destination to quadrant
                 b.fc=cmykdrn(np.argmax(current)) # this is NOT the usual way to show a soul, but it looks nice here
-                # k.set_state_action("exploring")
-                # self.GoToZ.set_dest(center(s,random.randint(1, 4)))
+                k.set_state_action("exploring")
+                self.GoToZ.set_dest(center(s,random.randint(1, 4)))
 
             # state machine
             if(k.tell_state_action() == "nesting" and nest and qdrnt(b)==quadrant(np.argmax(current))): # If in contact with the biggest nest -> stop
