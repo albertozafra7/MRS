@@ -206,11 +206,11 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
 
             if k.tell_state_action() != "nested" and k.tell_state_action() != "nesting" and current.any(): # changes color and set destination to quadrant
                 b.fc=cmykdrn(np.argmax(current)) # this is NOT the usual way to show a soul, but it looks nice here
-                k.set_state_action("exploring")
-                self.GoToZ.set_dest(center(s,random.randint(1, 4)))
+                # k.set_state_action("exploring")
+                # self.GoToZ.set_dest(center(s,random.randint(1, 4)))
 
             # state machine
-            if(k.tell_state_action() == "nesting" and nest and qdrnt(b)==np.argmax(current)): # If in contact with the biggest nest -> stop
+            if(k.tell_state_action() == "nesting" and nest and qdrnt(b)==quadrant(np.argmax(current))): # If in contact with the biggest nest -> stop
                 k.set_state_action("nested")
                 self.t_ini = -1
                 self.GoToZ.stop()
@@ -220,7 +220,7 @@ class BiB(Soul): # Bigger is Better, CHANGE FOR YOURS
 
             # Roussian Roulete movement
             if s.steps%self.update_rate == 0: # Every X iterations we compute the probability to go to the nest or explore
-                if nests_k > 1 and k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest ""nests_k > 1 and"""  
+                if nests_k > 1 and k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid((s.time*100.0+max(k.tell_communications()))/2)): #  Goes to the biggest nest ""nests_k > 1 and"""  
                 #if k.tell_state_action() != "nested" and current.any() and (random.random() < sigmoid(max(k.tell_communications())) or s.time > 20): #  Goes to the biggest nest ""nests_k > 1 and"""  
                     #self.GoToZ.set_dest(center(s,np.argmax(current)))
                     
@@ -292,10 +292,11 @@ def init():
     ## Populate the world
     NM=50; random.random()
 
+    A = 4
     # two Nests
     i=0
     while i<2:
-        new=Nest(s,'N'+str(i),pos=((-1)**i*uniform(0.2*s.W,0.8*s.W),uniform(0.2*s.H,0.8*s.H)),area=uniform(2,4)+4*i)
+        new=Nest(s,'N'+str(i),pos=((-1)**i*uniform(0.2*s.W,0.8*s.W),uniform(0.2*s.H,0.8*s.H)),area=uniform(2,A)+A*i)
         if s.fits(new,s.room,safe=s.R):
             s.bodies.append(new)
             new.fc=cmykdrn(qdrnt(new))
