@@ -38,10 +38,10 @@ def plot_evolutionxy(states_x_iter,states_y_iter):
     plt.xlabel("x axis")
     plt.ylabel("y axis")
 
-    (n, num_iter)=states_x_iter.shape
+    (num_iter,n)=states_x_iter.shape
     for i in range(n):
-        v_x=states_x_iter[i,:]
-        v_y=states_y_iter[i,:]
+        v_x=states_x_iter[:,i]
+        v_y=states_y_iter[:,i]
         plt.plot(v_x,v_y, marker='.',)
         # Special markers for the first and last values
         plt.plot(v_x[0],v_y[0],marker='x')
