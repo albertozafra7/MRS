@@ -2,6 +2,36 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import random
 import numpy as np  # Make numpy available using np.
 from matplotlib import pyplot as plt # Plotting of the graph
+from matplotlib.animation import FuncAnimation
+
+
+
+def plot_evolutionxy_video(states_x_iter, states_y_iter):
+    fig, ax = plt.subplots()
+    ax.set_title("Evolution of the x,y coordinates of each node")
+    ax.set_xlabel("x axis")
+    ax.set_ylabel("y axis")
+
+    (n, num_iter) = states_x_iter.shape
+    lines = []
+    for i in range(n):
+        line, = ax.plot([], [], marker='.')
+        lines.append(line)
+
+        # Special markers for the first and last values
+        ax.plot(states_x_iter[i, 0], states_y_iter[i, 0], marker='x')
+        ax.plot(states_x_iter[i, -1], states_y_iter[i, -1], marker='o')
+
+    def update(frame):
+        for i in range(n):
+            lines[i].set_data(states_x_iter[i, :frame], states_y_iter[i, :frame])
+        return lines
+
+    ani = FuncAnimation(fig, update, frames=range(num_iter), blit=True)
+    ani.save('plot_evolutionxy.mp4', fps=10)  # Save the animation as a video
+
+    plt.show()
+
 
 def plot_evolutionxy(states_x_iter,states_y_iter):
     plt.title("Evolution of the x,y coordinates of each node")

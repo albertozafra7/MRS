@@ -38,13 +38,13 @@ class bot:
     def step_rendevous(self):
         neigh = self.get_random_neighbor()
     
-        [pos1,pos2] = self.compute_step_rendevous(self,self.get_pos(),neigh.get_pos(),self.step_size)
+        [pos1,pos2] = self.compute_step_rendevous(self.get_pos(),neigh.get_pos(),self.step_size)
 
         self.move(pos1)
         neigh.move(pos2)
         return self.id, pos1, neigh.get_id(), pos2
         
-    def compute_step_rendevous(pos1,pos2,step_size):
+    def compute_step_rendevous(self,pos1,pos2,step_size):
         pos1[0] = pos1[0]+step_size*(pos2[0]-pos1[0])
         pos1[1] = pos1[1]+step_size*(pos2[1]-pos1[1])
         pos2[0] = pos2[0]+step_size*(pos1[0]-pos2[0])
@@ -63,7 +63,7 @@ class bot:
         self.move(pos1)
         neigh.move(pos2)
         
-    def compute_step_rendevous(pos1,pos2,step_size,offset1,offset2):
+    def compute_step_line(pos1,pos2,step_size,offset1,offset2):
         pos1[0] = pos1[0]+step_size*(pos2[0]-pos1[0])+offset1[0]
         pos1[1] = pos1[1]+step_size*(pos2[1]-pos1[1])+offset1[1]
         pos2[0] = pos2[0]+step_size*(pos1[0]-pos2[0])+offset2[0]
