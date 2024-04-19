@@ -2,56 +2,55 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import random
 import numpy as np  # Make numpy available using np.
 from matplotlib import pyplot as plt # Plotting of the graph
-from matplotlib.animation import FuncAnimation
+from matplotlib import animation
 
 
+def plot_evolutionxy_video(robot_evolution_x, robot_evolution_y):
+    fig, ax = plt.subplots()  # Create a figure and an axes object
 
-def plot_evolutionxy_video(states_x_iter, states_y_iter):
-    fig, ax = plt.subplots()
+    # Set plot labels and title
     ax.set_title("Evolution of the x,y coordinates of each node")
     ax.set_xlabel("x axis")
     ax.set_ylabel("y axis")
 
-    (n, num_iter) = states_x_iter.shape
-    lines = []
-    for i in range(n):
-        line, = ax.plot([], [], marker='.')
-        lines.append(line)
+    (n, num_iter) = robot_evolution_x.shape  # Get the number of nodes and iterations
 
-        # Special markers for the first and last values
-        ax.plot(states_x_iter[i, 0], states_y_iter[i, 0], marker='x')
-        ax.plot(states_x_iter[i, -1], states_y_iter[i, -1], marker='o')
+    # Initialize empty line objects for animation
+    lines = [ax.plot([], [], marker='.')[0] for i in range(n)]  # Create lines for each node
 
-    def update(frame):
-        for i in range(n):
-            lines[i].set_data(states_x_iter[i, :frame], states_y_iter[i, :frame])
+    # Function to update the animation frame
+    def animate(i):
+
+        for j in range(n):
+            lines[j].set_data(robot_evolution_x[j, :i], robot_evolution_y[j, :i])  # Update line data
+
+        # Special markers for the first and last values (outside the loop for efficiency)
+        ax.plot(robot_evolution_x[0, :i], robot_evolution_y[0, :i], marker='x')
+        ax.plot(robot_evolution_x[-1, :i], robot_evolution_y[-1, :i], marker='o')
+
         return lines
 
-    ani = FuncAnimation(fig, update, frames=range(num_iter), blit=True)
-    ani.save('plot_evolutionxy.mp4', fps=10)  # Save the animation as a video
+    # Create animation object
+    anim = animation.FuncAnimation(fig, animate, frames=num_iter, interval=10)  # Adjust interval for animation speed
+    writergif = animation.PillowWriter(fps=30)
+    # Save animation as video (replace 'animation.mp4' with your desired filename)
+    anim.save('animation', writer=writergif)  # You may need to install ffmpeg for this to work
 
-    plt.show()
+    plt.close(fig)  # Close the plot
 
-
-def plot_evolutionxy(states_x_iter,states_y_iter):
+def plot_evolutionxy(robot_evolution_x,robot_evolution_y):
     plt.title("Evolution of the x,y coordinates of each node")
     plt.xlabel("x axis")
     plt.ylabel("y axis")
 
-    (num_iter,n)=states_x_iter.shape
+    (n, num_iter)=robot_evolution_x.shape
     for i in range(n):
-        v_x=states_x_iter[:,i]
-        v_y=states_y_iter[:,i]
+        v_x=robot_evolution_x[i,:]
+        v_y=robot_evolution_y[i,:]
         plt.plot(v_x,v_y, marker='.',)
         # Special markers for the first and last values
         plt.plot(v_x[0],v_y[0],marker='x')
         plt.plot(v_x[-1],v_y[-1],marker='o')
-        # alternative if we want to use arrows instead of lines.
-        #x_ini=v_x[k]
-        #y_ini=v_y[k]
-        #dx= v_x[k+1] -x_ini
-        #dy= v_y[k+1] -y_ini
-        #plt.arrow(x_ini, y_ini, dx, dy, head_length=0.1,length_includes_head=True, head_width=0.05)
     plt.show()
 
 def plot_evolutionx(states_x_iter):
