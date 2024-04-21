@@ -64,10 +64,10 @@ class bot:
         return self.id, pos1, neigh.get_id(), pos2
         
     def compute_step_rendevous(self,pos1,pos2,step_size):
-        pos1[0] = pos1[0]+step_size*(pos2[0]-pos1[0])
-        pos1[1] = pos1[1]+step_size*(pos2[1]-pos1[1])
-        pos2[0] = pos2[0]+step_size*(pos1[0]-pos2[0])
-        pos2[1] = pos2[1]+step_size*(pos1[1]-pos2[1])
+        pos1[0] = pos1[0]+step_size*((pos2[0]-pos1[0])/2)
+        pos1[1] = pos1[1]+step_size*((pos2[1]-pos1[1])/2)
+        pos2[0] = pos2[0]+step_size*((pos1[0]-pos2[0])/2)
+        pos2[1] = pos2[1]+step_size*((pos1[1]-pos2[1])/2)
         
         return pos1, pos2
     
@@ -76,8 +76,8 @@ class bot:
         
         
         if(self.can_update() and neigh.can_update()):
-            offset_bot1 = offset*self.id
-            offset_bot2 = offset*neigh.get_id()
+            offset_bot1 = [offset[0]*self.id, offset[1]*self.id]
+            offset_bot2 = [offset[0]*neigh.get_id(),offset[1]*neigh.get_id()] 
             
             [pos1,pos2] = self.compute_step_line(self.get_pos(),neigh.get_pos(),self.step_size,offset_bot1,offset_bot2)
             
@@ -92,11 +92,11 @@ class bot:
             
         return self.id, pos1, neigh.get_id(), pos2
         
-    def compute_step_line(pos1,pos2,step_size,offset1,offset2):
-        pos1[0] = pos1[0]+step_size*(pos2[0]-pos1[0])+offset1[0]
-        pos1[1] = pos1[1]+step_size*(pos2[1]-pos1[1])+offset1[1]
-        pos2[0] = pos2[0]+step_size*(pos1[0]-pos2[0])+offset2[0]
-        pos2[1] = pos2[1]+step_size*(pos1[1]-pos2[1])+offset2[1]
+    def compute_step_line(self,pos1,pos2,step_size,offset1,offset2):
+        pos1[0] = pos1[0]+step_size*(offset1[0] - pos1[0])
+        pos1[1] = pos1[1]+step_size*(offset1[1] - pos1[1])
+        pos2[0] = pos2[0]+step_size*(offset2[0] - pos2[0])
+        pos2[1] = pos2[1]+step_size*(offset2[1] - pos2[1])
         
         return pos1, pos2
         
