@@ -17,7 +17,7 @@ def remove_all_images(folder_path):
 def plot_evolutionxy_video(robot_evolution_x, robot_evolution_y):
     plt.switch_backend('Agg')
     # Define plot limits (adjust as needed)
-    x_min, x_max = -10, 10
+    x_min, x_max = -10, 10 #-2.5, 17.5 
     y_min, y_max = -10, 10
     (n, num_iter)=robot_evolution_x.shape
     # Function to generate a single plot frame
