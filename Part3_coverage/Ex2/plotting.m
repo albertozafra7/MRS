@@ -1,4 +1,4 @@
-function plotting(agents,world,coverage)
+function plotting(agents,world)
     % Struct agent:
         % position
         % radius
@@ -9,14 +9,19 @@ function plotting(agents,world,coverage)
 
     % matrix world where each position (element) goes from 0-10 (being this value the coverage level)
     
+    scale = 10;
     
+    world(1,1) = 1;
     clf
-    scatter(agents(:).position(1),agents(:).position(2),'red')
-    xlim([-size(world,2)/2 size(world,2)/2]);
-    ylim([-size(world,1)/2 size(world,1)/2]);
+    imagesc(world)
+    xlim([1,size(world,2)]);
+    ylim([1,size(world,1)]);
     hold on;
-    % quiver(P(:,1),P(:,2),dP(:,1),dP(:,2),'red')
+    colorbar;
+    colormap hot;
+    scatter(agents(:).position(1),agents(:).position(2),'red')
+    axis image;
     
-    title(sprintf('\Lambda: %.2f', coverage));
-    
+    title(sprintf('Lambda'));
+    pause(0.5);
 end
