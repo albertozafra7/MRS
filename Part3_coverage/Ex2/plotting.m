@@ -1,15 +1,4 @@
-function plotting(agents,world)
-    % Struct agent:
-        % position
-        % radius
-        % power
-        % velocity
-        % max_power
-        % max_vel
-
-    % matrix world where each position (element) goes from 0-10 (being this value the coverage level)
-    
-    scale = 10;
+function plotting(agents,world,ratio,colMap)
     
     world(1,1) = 1;
     clf
@@ -18,10 +7,13 @@ function plotting(agents,world)
     ylim([1,size(world,1)]);
     hold on;
     colorbar;
-    colormap hot;
-    scatter(agents(:).position(1),agents(:).position(2),'red')
+    colormap (colMap);
+%     colormap hsv;
+    if ~isempty(agents)
+        scatter(agents.position(:,2),agents.position(:,1),'red')
+        scatter(agents.goal(:,2),agents.goal(:,1),'green','d')
+    end
     axis image;
     
-    title(sprintf('Lambda'));
-    pause(0.5);
+    title(sprintf('Correct Lambda: %.2f%%',ratio));
 end
