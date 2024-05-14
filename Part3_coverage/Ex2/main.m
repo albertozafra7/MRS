@@ -7,12 +7,12 @@ params.time_steps = 300;   % number or -1 for infinite
 params.num_agents = 6;     % number of agents
 params.method = "quant";   % update method (min/rand/quant/terc)
 
-params.rad = 40;
-params.power = 50;
-params.max_vel = 4;
+params.rad = 40;           % radius of the robot
+params.power = 50;         % power of the robot
+params.max_vel = 4;        % max velocity of the robot
 
-params.minPerc = 0.3;
-params.maxPerc = 0.8;
+params.minPerc = 0.3;      % minimum admisible percentage
+params.maxPerc = 0.8;      % maximum admisible percentage
 
 % SIMULATION
 [Lambda,ratios] = simulate(params);
