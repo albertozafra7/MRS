@@ -10,5 +10,5 @@ echo "Executing the A letter code to save the agent positions through time"
 echo "Visualizing the output"
 python3 visualize_sim.py --file_path=./examples/A_output.txt --quarter_colors=T
 
-# echo "Removing the trace of the program"
-# rm ./examples/A_output.txt
+echo "Removing the trace of the program"
+rm ./examples/A_output.txt

@@ -64,22 +64,13 @@ int main()
 	simulator.setTimeStep(time_step);
 	simulator.setAgentDefaults(15.0f, 10, 1.2f, 1.5f, 1.0f, 2.0f);
 
-	// double inter_robot_dist = 1/((double) n_robots);
 	double inter_robot_dist = 5;
 
     const std::vector<Vector2> initial_positions = generate_square(inter_robot_dist);
-	// std::cout << "Initial Positons" <<std::endl;
-	// for (std::size_t i = 0; i < n_robots; ++i) {
-	// 	std::cout << initial_positions[i] << " ";
-	// }
 
-	// std::cout << std::endl << "Final Positions" << std::endl;
 
     const std::vector<Vector2> final_positions = generate_A_letter(inter_robot_dist*5);
-	// for (std::size_t i = 0; i < n_robots; ++i) {
-	// 	std::cout << final_positions[i] << " ";
-	// }
-	// std::cout << std::endl;
+
 	for (std::size_t i = 0; i < n_robots; ++i) {
 		simulator.addAgent(initial_positions[i], simulator.addGoal(final_positions[i]));
 	}
