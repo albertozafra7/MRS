@@ -114,4 +114,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
   "src/CMakeFiles/HRVO.dir/DependInfo.cmake"
   "examples/CMakeFiles/Circle.dir/DependInfo.cmake"
+  "examples/CMakeFiles/A_shape.dir/DependInfo.cmake"
   )

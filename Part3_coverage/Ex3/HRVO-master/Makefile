@@ -581,6 +581,19 @@ Circle/fast:
 	$(MAKE) $(MAKESILENT) -f examples/CMakeFiles/Circle.dir/build.make examples/CMakeFiles/Circle.dir/build
 .PHONY : Circle/fast
 
+#=============================================================================
+# Target rules for targets named A_shape
+
+# Build rule for target.
+A_shape: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 A_shape
+.PHONY : A_shape
+
+# fast build rule for target.
+A_shape/fast:
+	$(MAKE) $(MAKESILENT) -f examples/CMakeFiles/A_shape.dir/build.make examples/CMakeFiles/A_shape.dir/build
+.PHONY : A_shape/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -624,6 +637,7 @@ help:
 	@echo "... NightlySubmit"
 	@echo "... NightlyTest"
 	@echo "... NightlyUpdate"
+	@echo "... A_shape"
 	@echo "... Circle"
 	@echo "... HRVO"
 .PHONY : help

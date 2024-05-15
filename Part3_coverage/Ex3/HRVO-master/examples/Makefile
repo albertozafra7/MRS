@@ -205,6 +205,44 @@ Circle/fast:
 	cd "/home/albertozafra7/Desktop/Universidad/Master/Multirobot Systems/MRS/Part3_coverage/Ex3/HRVO-master" && $(MAKE) $(MAKESILENT) -f examples/CMakeFiles/Circle.dir/build.make examples/CMakeFiles/Circle.dir/build
 .PHONY : Circle/fast
 
+# Convenience name for target.
+examples/CMakeFiles/A_shape.dir/rule:
+	cd "/home/albertozafra7/Desktop/Universidad/Master/Multirobot Systems/MRS/Part3_coverage/Ex3/HRVO-master" && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 examples/CMakeFiles/A_shape.dir/rule
+.PHONY : examples/CMakeFiles/A_shape.dir/rule
+
+# Convenience name for target.
+A_shape: examples/CMakeFiles/A_shape.dir/rule
+.PHONY : A_shape
+
+# fast build rule for target.
+A_shape/fast:
+	cd "/home/albertozafra7/Desktop/Universidad/Master/Multirobot Systems/MRS/Part3_coverage/Ex3/HRVO-master" && $(MAKE) $(MAKESILENT) -f examples/CMakeFiles/A_shape.dir/build.make examples/CMakeFiles/A_shape.dir/build
+.PHONY : A_shape/fast
+
+A_shape.o: A_shape.cpp.o
+.PHONY : A_shape.o
+
+# target to build an object file
+A_shape.cpp.o:
+	cd "/home/albertozafra7/Desktop/Universidad/Master/Multirobot Systems/MRS/Part3_coverage/Ex3/HRVO-master" && $(MAKE) $(MAKESILENT) -f examples/CMakeFiles/A_shape.dir/build.make examples/CMakeFiles/A_shape.dir/A_shape.cpp.o
+.PHONY : A_shape.cpp.o
+
+A_shape.i: A_shape.cpp.i
+.PHONY : A_shape.i
+
+# target to preprocess a source file
+A_shape.cpp.i:
+	cd "/home/albertozafra7/Desktop/Universidad/Master/Multirobot Systems/MRS/Part3_coverage/Ex3/HRVO-master" && $(MAKE) $(MAKESILENT) -f examples/CMakeFiles/A_shape.dir/build.make examples/CMakeFiles/A_shape.dir/A_shape.cpp.i
+.PHONY : A_shape.cpp.i
+
+A_shape.s: A_shape.cpp.s
+.PHONY : A_shape.s
+
+# target to generate assembly for a file
+A_shape.cpp.s:
+	cd "/home/albertozafra7/Desktop/Universidad/Master/Multirobot Systems/MRS/Part3_coverage/Ex3/HRVO-master" && $(MAKE) $(MAKESILENT) -f examples/CMakeFiles/A_shape.dir/build.make examples/CMakeFiles/A_shape.dir/A_shape.cpp.s
+.PHONY : A_shape.cpp.s
+
 Circle.o: Circle.cpp.o
 .PHONY : Circle.o
 
@@ -244,7 +282,11 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... A_shape"
 	@echo "... Circle"
+	@echo "... A_shape.o"
+	@echo "... A_shape.i"
+	@echo "... A_shape.s"
 	@echo "... Circle.o"
 	@echo "... Circle.i"
 	@echo "... Circle.s"

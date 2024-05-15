@@ -35,6 +35,7 @@
 
 if(BUILD_TESTING)
   add_executable(Circle Circle.cpp)
+  add_executable(A_shape A_shape.cpp)
 
   option(OUTPUT_TIME_AND_POSITIONS "Output time and positions" ON)
 
@@ -48,10 +49,20 @@ if(BUILD_TESTING)
     ${HRVO_EXAMPLES_COMPILE_DEFINITIONS})
   target_link_libraries(Circle PRIVATE ${HRVO_LIBRARY})
 
+  target_compile_definitions(A_shape PRIVATE
+    ${HRVO_EXAMPLES_COMPILE_DEFINITIONS})
+  target_link_libraries(A_shape PRIVATE ${HRVO_LIBRARY})
+
   if(ENABLE_INTERPROCEDURAL_OPTIMIZATION
       AND HRVO_INTERPROCEDURAL_OPTIMIZATION_SUPPORTED)
     set_target_properties(Circle PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
   endif()
 
+  if(ENABLE_INTERPROCEDURAL_OPTIMIZATION
+      AND HRVO_INTERPROCEDURAL_OPTIMIZATION_SUPPORTED)
+    set_target_properties(A_shape PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
+  endif()
+
   add_test(NAME Circle COMMAND Circle)
+  add_test(NAME A_shape COMMAND A_shape)
 endif()

@@ -34,107 +34,95 @@
  * \file   Circle.cpp
  * \brief  Example with 250 agents navigating through a circular environment.
  */
-#define _USE_MATH_DEFINES
-#include <graphics_handler.hpp>
+
+#ifndef HRVO_OUTPUT_TIME_AND_POSITIONS
+#define HRVO_OUTPUT_TIME_AND_POSITIONS 1
+#endif
+
 #include <cmath>
-#include <HRVO.h>
+
+#if HRVO_OUTPUT_TIME_AND_POSITIONS
 #include <iostream>
-#include <vector>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
+#endif
+
+#include <HRVO.h>
+
 using namespace hrvo;
 
-std::vector <cv::Scalar> random_colors_gen(size_t nBots);
-std::vector <Vector2> gen_square_positions(size_t nBots, double side_lenght);
-std::vector <Vector2> gen_L_letter_positions(size_t nBots, double side_lenght);
+const float HRVO_TWO_PI = 6.283185307179586f;
+const double side_length = 30.f;
+const std::size_t n_robots = 30;
+const double time_step = 0.75f;
 
-int main(int argc, char *argv[])
+std::vector <Vector2> generate_square(const double robot_rel_dist);
+std::vector <Vector2> generate_A_letter(const double robot_rel_dist);
+
+int main()
 {
-	// INITIALIZATIONS AND PARAMETERS
-	srand(time(NULL));
-	size_t nBots = 30;
-	double step = 1/((double) nBots);
-	size_t windowSize = 1000;
-	double scale_factor = 8;
-	size_t botSize = 5;
-	double side_lenght = 60.0f;
-	std::vector <cv::Scalar> colors = random_colors_gen(nBots);
-	graphicsHandler display(windowSize, windowSize, scale_factor, botSize);
-
-	std::vector <Vector2> square_positions = gen_square_positions(nBots, side_lenght);
-	std::vector <Vector2> L_letter_positions = gen_L_letter_positions(nBots, side_lenght);
-	// ENVIRONMENT DEFINITION
-
 	Simulator simulator;
-	simulator.setTimeStep(0.25f);
-	simulator.setAgentDefaults(15.0f, 10, 1.f, 1.5f, 1.0f, 2.0f);
 
-	for (std::size_t i = 0; i < nBots; ++i) {
-		simulator.addAgent(square_positions[i], simulator.addGoal(L_letter_positions[i]));
+	simulator.setTimeStep(time_step);
+	simulator.setAgentDefaults(15.0f, 10, 1.2f, 1.5f, 1.0f, 2.0f);
+
+	// double inter_robot_dist = 1/((double) n_robots);
+	double inter_robot_dist = 5;
+
+    const std::vector<Vector2> initial_positions = generate_square(inter_robot_dist);
+	// std::cout << "Initial Positons" <<std::endl;
+	// for (std::size_t i = 0; i < n_robots; ++i) {
+	// 	std::cout << initial_positions[i] << " ";
+	// }
+
+	// std::cout << std::endl << "Final Positions" << std::endl;
+
+    const std::vector<Vector2> final_positions = generate_A_letter(inter_robot_dist*5);
+	// for (std::size_t i = 0; i < n_robots; ++i) {
+	// 	std::cout << final_positions[i] << " ";
+	// }
+	// std::cout << std::endl;
+	for (std::size_t i = 0; i < n_robots; ++i) {
+		simulator.addAgent(initial_positions[i], simulator.addGoal(final_positions[i]));
 	}
 
-	double x, y;
 	do {
+#if HRVO_OUTPUT_TIME_AND_POSITIONS
+		std::cout << simulator.getGlobalTime();
+
 		for (std::size_t i = 0; i < simulator.getNumAgents(); ++i) {
-			x = simulator.getAgentPosition(i).getX();
-			y = simulator.getAgentPosition(i).getY();
-			display.drawRobot(x,y,colors[i]);
+			std::cout << " " << simulator.getAgentPosition(i);
 		}
-		display.showAndClearImage();
+
+		std::cout << std::endl;
+#endif /* HRVO_OUTPUT_TIME_AND_POSITIONS */
+
 		simulator.doStep();
 	}
 	while (!simulator.haveReachedGoals());
 
-	bool visible = true;
-	while(visible)
-	{
-		cv::waitKey(0);
-		visible = cv::getWindowProperty(display.get_window_name(),cv::WND_PROP_VISIBLE) != 0;
-	}
 	return 0;
 }
 
-//#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
-// FUNCTIONS
-//#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
-
-// Generator of random colors for the robots
-std::vector <cv::Scalar> random_colors_gen(size_t nBots){
-	std::vector <cv::Scalar> colors;
-	double R, G, B;
-	for (size_t i = 0; i<nBots; i ++)
-	{
-		R = rand()%225 + 30;
-		G = rand()%225 + 30;
-		B = rand()%225 + 30;
-		colors.push_back(cv::Scalar(R,G,B));
-	}
-	return colors;
-}
-
-// Generator of the initial positions along a square centered in the 0,0
-std::vector <Vector2> gen_square_positions(size_t nBots, double side_lenght){
+std::vector <Vector2> generate_square(const double robot_rel_dist){
 	std::vector <Vector2> positions;
-	Vector2 currPos = Vector2(side_lenght/2, side_lenght/2);
+	Vector2 currPos = Vector2(side_length/2, side_length/2);
 	positions.push_back(currPos);
-	double step = side_lenght * 4 / ((float) nBots);
+	double step = side_length * 4 / ((float) n_robots);
 	
 	std::vector <Vector2> directions;
-	directions.push_back(Vector2( 0,-1)*step); // 1st go down
-	directions.push_back(Vector2(-1, 0)*step); // 2nd go left
-	directions.push_back(Vector2( 0, 1)*step); // 3rd go up
-	directions.push_back(Vector2( 1, 0)*step); // 4rd go right
+	directions.push_back(Vector2( 0,-1)*robot_rel_dist); // 1st go down
+	directions.push_back(Vector2(-1, 0)*robot_rel_dist); // 2nd go left
+	directions.push_back(Vector2( 0, 1)*robot_rel_dist); // 3rd go up
+	directions.push_back(Vector2( 1, 0)*robot_rel_dist); // 4rd go right
 
 	std::vector <double> lenghts;
-	lenghts.push_back(side_lenght); 			
-	lenghts.push_back(side_lenght);
-	lenghts.push_back(side_lenght);
-	lenghts.push_back(side_lenght);
+	lenghts.push_back(side_length); 			
+	lenghts.push_back(side_length);
+	lenghts.push_back(side_length);
+	lenghts.push_back(side_length);
 	uint j = 0; // keeps track of the direction
 	double already_advanced = 0;
 
-	for (size_t i; i < nBots-1; i++){
+	for (size_t i = 0; i < n_robots-1; i++){
 		currPos += directions[j]; // move in the current direction
 		already_advanced += step;
 		if (already_advanced > lenghts[j]){
@@ -149,36 +137,57 @@ std::vector <Vector2> gen_square_positions(size_t nBots, double side_lenght){
 	return positions;
 }
 
+std::vector<Vector2> generate_A_letter(const double robot_rel_dist) {
+    std::vector<Vector2> positions;
+    Vector2 currPos = Vector2(0,side_length);
+    positions.push_back(currPos);
 
-std::vector <Vector2> gen_L_letter_positions(size_t nBots, double side_lenght){
-		std::vector <Vector2> positions;
+    double step = side_length * 7 / (double)n_robots;
 
-	
-	Vector2 currPos = Vector2(-side_lenght/4, side_lenght/2);
-	positions.push_back(currPos);
+    std::vector<Vector2> directions;
+	directions.push_back(Vector2(0.25,-0.5)*robot_rel_dist);  // 1st go down right
+	directions.push_back(Vector2(0.25,-0.5)*robot_rel_dist);  // 2nd go down right
+	directions.push_back(Vector2(-0.25,0.5)*robot_rel_dist);  // 3rd go up left
+	directions.push_back(Vector2(-0.25,0)*robot_rel_dist);	  // 4th go left
+	directions.push_back(Vector2(-0.25,-0.5)*robot_rel_dist); // 5th go down left
+	directions.push_back(Vector2(0.25,0.5)*robot_rel_dist);	  // 6th go up right
+	directions.push_back(Vector2(0.2,0.5)*robot_rel_dist);	  // 7th go up right
+    
 
-	double step = (side_lenght + side_lenght*3/4) / ((float) nBots);
-	
-	std::vector <Vector2> directions;
-	directions.push_back(Vector2( 0,-1)*step); // 1st go down
-	directions.push_back(Vector2( 1, 0)*step); // 2nd go right
-	std::vector <double> lenghts;
-	lenghts.push_back(side_lenght); 			// vertical is as tall as square
-	lenghts.push_back(side_lenght*3/4);			// horizontal is 3/4 the lenght of the vertical
-	uint j = 0; // keeps track of the direction
-	double already_advanced = 0;
+    std::vector<double> lengths;
+	lengths.push_back(side_length/2); 			
+	lengths.push_back(side_length);
+	lengths.push_back(side_length);
+	lengths.push_back(side_length);			
+	lengths.push_back(side_length);
+	lengths.push_back(side_length);
+	lengths.push_back(side_length/2);
 
-	for (size_t i; i < nBots-1; i++){
-		currPos += directions[j]; // move in the current direction
-		already_advanced += step;
-		if (already_advanced > lenghts[j]){
-			currPos -= directions[j]; // go back
-			currPos += directions[j]/step * (step - (already_advanced-lenghts[j])); // advance untill the end of the side
-			j += 1; // change directions
-			currPos += directions[j]/step * (already_advanced-lenghts[j-1]); // advance the rest of the step in the new direction
-			already_advanced -= lenghts[j-1]; // restart the counter of the advancement on the new side
-		}
-		positions.push_back(currPos);
-	}
-	return positions;
+	/*
+	directions.push_back(Vector2(0.25,0.5)*robot_rel_dist);	  // 6th go up right
+	directions.push_back(Vector2(0.25,-0.5)*robot_rel_dist);  // 1st go down right
+	directions.push_back(Vector2(0.25,-0.5)*robot_rel_dist);  // 2nd go down right
+	directions.push_back(Vector2(-0.25,0.45)*robot_rel_dist);  // 3rd go up left
+	directions.push_back(Vector2(-0.25,0)*robot_rel_dist);	  // 4th go left
+	directions.push_back(Vector2(-0.25,-0.5)*robot_rel_dist); // 5th go down left
+	directions.push_back(Vector2(0.2,0.45)*robot_rel_dist);	  // 7th go up right
+	*/
+
+    uint j = 0; // keeps track of the direction
+    double already_advanced = 0;
+
+    for (size_t i = 0; i < n_robots - 1; i++) {
+        currPos = currPos + directions[j]; // move in the current direction
+        already_advanced += step;
+        if (already_advanced > lengths[j]) {
+            currPos = currPos - directions[j]; // go back
+            currPos = currPos + (directions[j] / step) * (step - (already_advanced - lengths[j])); // advance until the end of the side
+            j++; // change directions
+            currPos = currPos + (directions[j] / step) * (already_advanced - lengths[j - 1]); // advance the rest of the step in the new direction
+            already_advanced -= lengths[j - 1]; // restart the counter of the advancement on the new side
+        }
+        positions.push_back(currPos);
+    }
+    return positions;
 }
+
