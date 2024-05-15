@@ -7,12 +7,21 @@ params.time_steps = 300;   % number or -1 for infinite
 params.num_agents = 6;     % number of agents
 params.method = "quant";   % update method (min/rand/quant/terc)
 
+<<<<<<< Updated upstream
 params.rad = 40;           % radius of the robot
 params.power = 50;         % power of the robot
 params.max_vel = 4;        % max velocity of the robot
 
 params.minPerc = 0.3;      % minimum admisible percentage
 params.maxPerc = 0.8;      % maximum admisible percentage
+=======
+params.rad = 40;    % radius of actuation of the robot
+params.power = 50;  % power of the robot
+params.max_vel = 4; % max vel of the robot
+
+params.minPerc = 0.3; % minimum acceptable percentage of coverage
+params.maxPerc = 0.8; % maximum acceptable percentage of coverage
+>>>>>>> Stashed changes
 
 % SIMULATION
 [Lambda,ratios] = simulate(params);
