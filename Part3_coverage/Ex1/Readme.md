@@ -55,7 +55,7 @@ This command runs the simulation with 10 robots in a grid formation.
 #### Square formation
 
     ```sh
-    python enclosing.py --n_robots=13 --shapesquare
+    python enclosing.py --n_robots=13 --shape=square
     ```
 
 This command runs the simulation with 13 robots in a square formation.
