@@ -50,16 +50,21 @@
 using namespace hrvo;
 
 const float HRVO_TWO_PI = 6.283185307179586f;
+const double circle_radius = 50.0f;
+const std::size_t n_robots = 30;
+const double time_step = 0.75f;
 
 int main()
 {
 	Simulator simulator;
 
-	simulator.setTimeStep(0.25f);
+	simulator.setTimeStep(time_step);
 	simulator.setAgentDefaults(15.0f, 10, 1.5f, 1.5f, 1.0f, 2.0f);
 
-	for (std::size_t i = 0; i < 250; ++i) {
-		const Vector2 position = 200.0f * Vector2(std::cos(0.004f * i * HRVO_TWO_PI), std::sin(0.004f * i * HRVO_TWO_PI));
+	double inter_robot_dist = 1/((double) n_robots);
+
+	for (std::size_t i = 0; i < n_robots; ++i) {
+		const Vector2 position = circle_radius * Vector2(std::cos(inter_robot_dist * i * HRVO_TWO_PI), std::sin(inter_robot_dist * i * HRVO_TWO_PI));
 		simulator.addAgent(position, simulator.addGoal(-position));
 	}
 
