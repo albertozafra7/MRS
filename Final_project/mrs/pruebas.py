@@ -26,18 +26,14 @@ except FileNotFoundError:
     raise FileNotFoundError(f"Directions file not found: {args.dirsF}")
 
 nL = ut.numLocalRobs(id,connections)
-nG = ut.numGroups(id,connections)
-nG = ut.numGroups(id,connections)
+nG = ut.numGroups(connections)
 port = ut.readPort(id,directions)
 dirs = ut.read_directions(id,connections,directions)
 
 print("Initializing communications...")
-com = comm.Communication(id, nL, nG, port, dirs)
+com = comm.Communication(nL, nG, "127.0.0.1", port, dirs)
 
-input("enterToEnd")
-com.finish()
-input("enterToEnd")
-
+input()
 # com.get_positions()
 
 # print("2: ",dirs[1].port)

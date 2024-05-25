@@ -1,5 +1,5 @@
 
-
+import numpy as np
 
 class IPadress:
     def __init__(self, host, port):
@@ -10,7 +10,7 @@ def read_directions(id,connections,directions):
     """
     Reads connections from connsF where global_id = id.
     Each line of connsF looks like this:
-      universal_id, local_id, group_id, id1, id2, id3
+      universal_id, local_id, group_id, uid1, uid2, uid3...
     
     id1, id2, id3: global ids of robots that are communicated with the robot
     with universal id == universal_id
@@ -51,7 +51,16 @@ def numLocalRobs(id,connections):
             nL = nL+1
     return nL
 
-def numGroups(id,connections):
+def numRobsInGroup(idG,connections):
+    
+    nL = 0
+    for line in connections:
+        line_data = line.strip().split(',')
+        if line_data[2] == idG:
+            nL = nL+1
+    return nL
+
+def numGroups(connections):
     
     nG = 0
     for line in connections:
@@ -70,3 +79,27 @@ def readPort(id,directions):
     
     host, port = directions[id].strip().split(':')
     return int(port)
+
+def readInitialPosition(id,positions):
+    initial_pos = np.zeros(2)
+
+    for line in positions:
+        line_data = line.strip().split(',')
+        if int(line_data[0]) == id:
+            initial_pos[0] = float(line_data[1])
+            initial_pos[1] = float(line_data[2])
+            break
+
+    return initial_pos
+
+def readIntialPositions(positions):
+    poses = []
+
+    for line in positions:
+        initial_pos = np.zeros(2)
+        line_data = line.strip().split(',')
+        initial_pos[0] = float(line_data[1])
+        initial_pos[1] = float(line_data[2])
+        poses.append(initial_pos)
+
+    return np.array(poses)
