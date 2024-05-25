@@ -8,20 +8,20 @@ from formation_control_class import formation_control # Our controller class
 import utils as ut
 import Communication as comm
 
-dir_file="./ips.txt"
-
 class agent:
 
-    def __init__(*, self, num_robots, num_groups, uid, idL, initial_poseL, shapeL, idG, initial_poseG, shapeG, initial_poseT, rotationL=False, rotationG=False, dt=0.01, KcL=15, KgL=10, KcG=15, KgG=10):
+    def __init__(self, num_robots, num_groups, uid, idL, initial_poseL, shapeL, idG, initial_poseG, shapeG, initial_poseT, dir_file, comm_file, rotationL=False, rotationG=False, dt=0.01, KcL=15, KgL=10, KcG=15, KgG=10):
 
         # ++++++++++++ Custom Properties ++++++++++++
         # Constants
-        self.uid = uid
-        self.nL = num_robots    # Number of robots in the group (int)
-        self.nG = num_groups    # Number of groups (int)
+        self.uid = uid                                          # Unique identifier of the agent (int)
+        self.nL = num_robots                                    # Number of robots in the group (int)
+        self.nG = num_groups                                    # Number of groups (int)
+        self.idG = idG                                          # Group identifier of the agent (int)
+        self.idL = idL                                          # Local identifier of the agent (int)
 
         # Local properties
-        self.qL = np.zeros((self.nL,3))    # We generate the initial q array nx(x,y,t)
+        self.qL = np.zeros((self.nL,3))                         # We generate the initial q array nx(x,y,t)
         self.qL[idL,:] = np.append(initial_poseL, time.time())  # We add the inital pose of the current agent and its timestamp (x,y,t)
         self.formationL = formation_control(num_agents=self.nL, id=idL, initial_pose=self.qL[:,:2], shape=shapeL, shape_center=initial_poseG, Kc=KcL, Kg=KgL, dt=dt, rotation=rotationL)
 
@@ -34,13 +34,19 @@ class agent:
         self.qT = initial_poseT
 
         # General control of the program
-        self.stop_flag = False  # To enable safe deletion of the object
+        self.stop_flag = False                                  # To enable safe deletion of the object
 
         # Communication properties
-        self.com = comm.Communication(self.uid, self.nL, self.nG, ut.readPort(self.uid,dir_file), ut.read_directions(self.uid,dir_file))
+        self.com = comm.Communication(self.nL, self.nG, ut.readIP(self.uid,dir_file), ut.readPort(self.uid,dir_file), ut.read_directions(self.uid,comm_file,dir_file))
 
 
         # ++++++++++++ Methods initialization ++++++++++++
+        # We update the new computed position to the communication system
+        self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
+        self.com.start_servers()
+
+        # We start the simulation
+        self.simulate()
 
 
     # Control simulation
@@ -80,5 +86,9 @@ class agent:
             self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
 
             # Maybe here a pause is needed???
+            time.sleep(1.5)
 
-        
+
+
+    def get_agent_pos(self):
+         return self.qL[self.idL,:2]

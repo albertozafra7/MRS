@@ -6,6 +6,15 @@ class IPadress:
         self.host = host
         self.port = port
     
+# def readIPs(dirsF):
+#     # Create directions list with host and port information
+#     dirs = []
+#     for i, communicated_id in enumerate(communicated_ids):
+#         if communicated_id >= len(directions):
+#             raise ValueError(f"Not enough entries in directions file for robot {id}")
+#         host, port = directions[communicated_id].strip().split(':')
+#         dirs.append(IPadress(host,int(port)))
+
 def read_directions(id,connections,directions):
     """
     Reads connections from connsF where global_id = id.
@@ -39,6 +48,7 @@ def read_directions(id,connections,directions):
         dirs.append(IPadress(host,int(port)))
     return dirs
     
+
 def numLocalRobs(id,connections):
     
     line_data = connections[id].strip().split(',')
@@ -74,6 +84,10 @@ def readGroup(id,connections):
     line_data = connections[id].strip().split(',')
     return int(line_data[2])
             
+def readIP(id,directions):
+    
+    host, port = directions[id].strip().split(':')
+    return host
 
 def readPort(id,directions):
     
@@ -103,3 +117,21 @@ def readIntialPositions(positions):
         poses.append(initial_pos)
 
     return np.array(poses)
+
+def readShape(shapes):
+    shapes = []
+    
+    for line in shapes:
+        line_data = line.strip().split(',')
+        shapes.append(line_data[0])
+    
+    return shapes
+
+def readRotations(shapes):
+    rotations = []
+    
+    for line in shapes:
+        line_data = line.strip().split(',')
+        rotations.append(bool(line_data[1]))
+
+    return rotations

@@ -13,7 +13,7 @@ import funcionesRobot as fr
 from ballFunctions import *
 import constantsFile as cf
 # tambien se podria utilizar el paquete de threading
-from multiprocessing import Process, Value, Array, Lock
+from multiprocessing import Process, Value, Lock
 
 
 MIN_DISTANCE = 4**2

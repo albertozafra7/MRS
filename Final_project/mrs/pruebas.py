@@ -30,7 +30,7 @@ nG = ut.numGroups(connections)
 port = ut.readPort(id,directions)
 dirs = ut.read_directions(id,connections,directions)
 
-print("Initializing communications...")
+
 com = comm.Communication(nL, nG, "127.0.0.1", port, dirs)
 
 input()

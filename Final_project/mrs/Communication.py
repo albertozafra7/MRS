@@ -4,107 +4,74 @@ import json
 import time
 import numpy as np
 from multiprocessing import Process, Value, Array, Lock
-import pudb
 
 
 class Communication:
     def __init__(self, nL, nG, ip, port, dirs):
 
-        # ++++++++++++++++ Custom Properties ++++++++++++++++
+        print("Initializing communications...")
 
+        # ++++++++++++++++ Custom Properties ++++++++++++++++
+        self.ip = ip
         self.nL = nL
         self.nG = nG
         self.port = port
         self.dirs = dirs
 
         # Robot positions nGxnLx3 --> nGxnLx(x,y,t)
-        self.poses = np.zeros((self.nG,self.nL,3))  # All poses
-        self.qT = np.zeros(3)                       # Target pose
+        # self.poses = [[[None,None,-1] for _ in range(self.nL)] for _ in range(self.nG)]
+        
+        self.shared_array = Array('d', nG * nL * 3)
+        # Reshape the flat array to the desired shape
+        self.poses = np.frombuffer(self.shared_array.get_obj()).reshape(nG, nL, 3)
+
+        self.qT = Array('d', 3)                      # Target pose
 
         # Locks and stop control
         self.comm_lock = Lock()
         self.finished = Value('b',0)
 
 
+    def start_servers(self):
         # +++++++++++++ Methods Initialization ++++++++++++++
-        if port == 60001:
-            # self.initialize_socket()
-            # self.lis = Process(target=self.listener, args=())
-            # self.lis.start()
+        # Create a server instance with a listening port
+        self.server = SimpleXMLRPCServer((self.ip, self.port))
+        # Register the function as a service
+        self.server.register_introspection_functions()  # Optional for introspection
+        self.server.register_function(self.RPC_get_poses, "RPC_get_poses") 
+        # Print a message and start serving requests
+        print("Server listening on port:",self.port)
+        self.srv = Process(target=self.service, args=())
+        self.srv.start()    
 
-            # Create a server instance with a listening port
-            server = SimpleXMLRPCServer((ip, port))
-            # Register the function as a service
-            server.register_introspection_functions()  # Optional for introspection
-            server.register_function(self.RPC_get_poses, "RPC_get_poses") 
-            # Print a message and start serving requests
-            print("Server listening on port:",port)
-            server.serve_forever()
-        else:
-            self.tal = Process(target=self.talker, args=())
-            self.tal.start()    
-            print("Talking")
+        self.start_connections()
+        self.tal = Process(target=self.talker, args=())
+        self.tal.start()    
+        print("Talking")
+
+    def service(self):
+        self.server.serve_forever()
 
     def RPC_get_poses(self,p):
+        print("He recibido:",p)
         self.update_positions(np.array(p))
+        print("positions:",self.poses)
         return self.poses.tolist()
-        
 
-    # def initialize_socket(self):
-    #     # Define port to listen on
-    #     PORT = self.port  # Replace with the same port number used by sender
+    def start_connections(self):
+        dirs_left = np.ones(len(self.dirs))
 
-    #     # Create a socket object
-    #     self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server = [None for _ in range(len(dirs_left))]
+        for i in range(len(dirs_left)):
+            self.server[i] = xmlrpc.client.Server("http://"+self.dirs[i].host+":"+str(self.dirs[i].port))
 
-    #     # Bind the socket to the port
-    #     self.sock.bind(("", PORT))
+            print(int(len(dirs_left)-np.sum(dirs_left)),"/",len(dirs_left)," Connected to: ",self.dirs[i].host,":",str(self.dirs[i].port))
 
-    #     # Listen for incoming connections
-    #     self.sock.listen(1)
-    #     print("Listening in port", PORT)
-
-    # def listener(self):
-
-    #     # try:
-    #     while not self.finished.value:
-
-    #         # Accept a connection
-    #         conn, addr = self.sock.accept()
-
-    #         print("L:Connected by", addr)
-
-    #         # Receive data from the client
-    #         data = conn.recv(1024).decode()
-
-    #         # Decode JSON data
-    #         try:
-    #             json_data = json.loads(data)
-    #             print("L:Received JSON data:", json_data)
-    #             self.update_positions(np.array(json_data["positions"]))
-
-    #             # Prepare a reply message (modify as needed)
-    #             reply = {"positions": self.poses.tolist()}
-    #             json_data = json.dumps(reply)
-
-    #             # Encode and send the reply
-    #             conn.sendall(json_data.encode())
-    #         except json.JSONDecodeError:
-    #             print("L:Error decoding JSON data:", data)
-    #             reply = "Error: Invalid JSON data received"
-    #             conn.sendall(reply.encode())
-
-    #         # Close the connection
-    #         conn.close()
-    #     # except:
-    #     #     print("closing")
-    #     self.sock.close()
-    #     self.finished.value = False
-    
 
     def talker(self):
 
         numDirs = len(self.dirs)
+        
         try:
             i = 0
             while not self.finished.value:
@@ -117,44 +84,16 @@ class Communication:
                 
                 try:
                     # Create a server proxy object
-                    server = xmlrpc.client.Server("http://"+HOST+":"+str(PORT))
-                    self.update_positions(np.array(server.RPC_get_poses(self.poses.tolist())))
+                    self.poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
+                    # self.server[i].RPC_get_poses(self.poses.tolist())
                 except Exception as e:
                     print("exception: ",e)
-                # # Sample JSON data
-                # data = {"positions": self.poses.tolist()}
-
-                # # Encode data to JSON string
-                # json_data = json.dumps(data)
-
-                # # Send the JSON string
-                # try:
-                #     # Connect to the server
-                #     comm.connect((HOST, PORT))
-                #     comm.sendall(json_data.encode())
-                #     print("T:Sent JSON data:", json_data)
-                #     # Receive reply from the listener
-                #     reply = comm.recv(1024).decode()
-                #     try:
-                #         json_data = json.loads(reply)
-                #         print(f"T:Received reply: ", json_data)
-                #         self.update_positions(np.array(json_data["positions"]))
-
-                #     except json.JSONDecodeError:
-                #         print("Error decoding JSON data:", reply)
-                        
-                #     # Close the socket
-                #     comm.close()
-                # except:
-                #     print("Connection refused:",HOST,":",PORT)
 
                 i = (i + 1) % numDirs
 
-                time.sleep(2)
+                time.sleep(4)
         except:
-            print("exiting")
-        # comm.close()
-        
+            print("exiting")        
         self.finished.value = False
 
     def update_positions(self,p):
@@ -163,11 +102,9 @@ class Communication:
         """
         print("updating...")
         # --- locked part ---
-        time.sleep(2)
-        self.comm_lock.acquire()
-        mask = np.array(self.poses[:,:,2] < p[:,:,2])
-        self.poses[mask] = p[mask]
-        self.comm_lock.release()
+        with self.comm_lock:
+            mask = np.array(self.poses[:,:,2] < p[:,:,2])
+            self.poses[mask] = p[mask]
         # --- locked part ---
 
     def update_position(self,group_id, robot_id, pose):
@@ -175,9 +112,11 @@ class Communication:
             [x,y,t]
         """
         # --- locked part ---
-        self.comm_lock.acquire()
-        self.poses[group_id,robot_id,:] = pose
-        self.comm_lock.release()
+        with self.comm_lock:
+            self.poses[group_id,robot_id,:] = pose
+            
+            # print("Robot " + str(robot_id) + " is at " + str(pose))
+            # print(self.poses)
         # --- locked part ---
 
     def get_local_positions(self,group_id):
@@ -190,9 +129,9 @@ class Communication:
         qLs = np.zeros((self.nL,3))
 
         # --- locked part ---
-        self.comm_lock.acquire()
-        qLs = self.poses[group_id,:,:] # We store all the robot positions
-        self.comm_lock.release()
+        with self.comm_lock:
+            qLs = self.poses[group_id,:,:] # We store all the robot positions
+            print("positions2:",self.poses)
         # --- locked part ---
 
         return qLs
@@ -208,19 +147,17 @@ class Communication:
         qGs = np.zeros((self.nG+1,3))
 
         # --- locked part ---
-        self.comm_lock.acquire()
-        # We compute the middle point of the robots (group position) by averaging all the robot positions
-        for i in range(self.nG):
-            qGs[i,:] = np.array([np.mean(self.poses[i,:,0]),np.mean(self.poses[i,:,1]),np.max(self.poses[i,:,2])])
+        with self.comm_lock:
+            # We compute the middle point of the robots (group position) by averaging all the robot positions
+            for i in range(self.nG):
+                qGs[i,:] = np.array([np.mean(self.poses[i,:,0]),np.mean(self.poses[i,:,1]),np.max(self.poses[i,:,2])])
 
-        # We add the target position at the end
-        qGs[i+1,:] = self.qT
-        self.comm_lock.release()
+            # We add the target position at the end
+            qGs[i+1,:] = self.qT
         # --- locked part ---
 
         return qGs
 
     def finish(self):
-        self.comm_lock.acquire()
-        self.finished = True
-        self.comm_lock.release()
+        with self.comm_lock:
+            self.finished = True

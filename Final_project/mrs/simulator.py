@@ -5,7 +5,6 @@ import numpy as np
 import time     # import the time library for the timestamp
 from datetime import datetime
 import utils as ut
-import agent
 import matplotlib
 import matplotlib.pyplot as plt
 import random
@@ -24,6 +23,7 @@ class Simulator:
         self.shapes_file = self.readFile(shape_file)# Shapes file path (string) -> Contains the list of shapes that we want to reconstruct as (shape(string),rotation(bool))
 
         # General control properties
+        self.stop_flag = False                      # Stop flag to end the simulation
         self.nG = ut.numGroups(self.conn_file)      # Number of groups in the simulation (int)
         self.nL = []                                # Number of robots in each group (array(int))
         
@@ -56,17 +56,34 @@ class Simulator:
         # Threading properties
         self.agent_lock = Lock()                    # Locks the memory of the thread
 
-        pass
+
+        # ++++++++++++++ Methods Initialization ++++++++++++++
+        self.initialize_robots()
+        
+        self.execute_simulation()
+      
+      
             
+    def execute_simulation(self):
+        while not self.stop_flag:
+            self.update_poses()
             
-    def initialize_robots(self):
+            self.plot_evolution()
+        
+        print("Terminating simulation")
+        
+            
+    def initialize_robots(self,dirsF):
+        ips = ut.readIps(dirsF)
+        print("Initializing simulation")
         
         uid = 0
         start_group_id = 0
         for idG in range(self.nG):
             qG = np.array([np.mean(self.q[start_group_id:start_group_id+self.nL[idG],0]),np.mean(self.q[start_group_id:start_group_id+self.nL[idG],1])])
             for idL in range(self.nL[idG]):
-                self.agents.append( Process(target=agent(num_robots=self.nL[idG], num_groups=self.nG, uid=uid, idL=idL, initial_poseL=self.q[uid], shapeL=self.shapeL[idG], idG=idG, initial_poseG=qG, shapeG=self.shapeG, initial_poseT=self.qT, rotationL=self.rotationL[idG], rotationG=self.rotationG)))
+                # TODO: CHANGEEEEEEE
+                self.agents.append(Process(target=agent(num_robots=self.nL[idG], num_groups=self.nG, uid=uid, idL=idL, initial_poseL=self.q[uid], shapeL=self.shapeL[idG], idG=idG, initial_poseG=qG, shapeG=self.shapeG, initial_poseT=self.qT, rotationL=self.rotationL[idG], rotationG=self.rotationG)))
                 self.agents[-1].start()
                 uid += 1
                 
@@ -76,9 +93,11 @@ class Simulator:
     def update_pose(self,uid):
         # --- locked part ---
         self.agent_lock.aquire()
-        self.q[uid,:] = pose[:2]
+        self.q[uid,:] = self.agents[uid].get_agent_pos()
+        self.agent_lock.release()
+        # --- locked part ---
     
-    def update_group_poses(self,idG,poses):
+    def update_group_poses(self,idG):
         start_index = 0
         
         for i in range(self.nG):
@@ -86,13 +105,18 @@ class Simulator:
                 break
             else:
                 start_index += self.nL[i]
-        
-        self.q[start_index:start_index+self.nL[idG],:] = poses[:,:2]
+                
+        # --- locked part ---
+        self.agent_lock.aquire()
+        self.q[start_index:start_index+self.nL[idG],:] = self.agents[start_index:start_index+self.nL[idG]].get_agent_pos()
+        self.agent_lock.release()
+        # --- locked part ---
     
-    def update_poses(self,poses):
-        self.q[:,:] = poses[:,:2]
-        
+    def update_poses(self):
+        for uid in range(self.nR):
+            self.update_pose(uid)
     
+    # TODO: Move target
     
     def readFile(self,file_path):
         try:

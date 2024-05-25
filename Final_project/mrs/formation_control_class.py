@@ -6,7 +6,7 @@ import numpy as np
 class formation_control:
 
     # Maybe it is necessary to send the initial/current center pose
-    def __init__(*, self, num_agents, id, initial_pose, shape, shape_center, Kc=15, Kg=10, dt=0.01, rotation=False):
+    def __init__(self, num_agents, id, initial_pose, shape, shape_center, Kc=15, Kg=10, dt=0.01, rotation=False):
 
         # ++++++++++++ Custom Properties ++++++++++++
         # Agent dependant
@@ -19,7 +19,7 @@ class formation_control:
         self.center = shape_center                      # The center of the shape that we want to formate (x,y)
 
         # Poses --> Take care of this!!
-        self.q = np.zeros(self.n+1,2)                   # Current pose (n+1)x(x,y)
+        self.q = np.zeros((self.n+1,2))                 # Current pose (n+1)x(x,y)
         self.q[:self.n,:] = initial_pose
         self.q[-1,:] = shape_center
 
@@ -38,7 +38,7 @@ class formation_control:
     
     # Updates all the stored poses
     def update_poses(self,new_q):
-        self.q = np.append(new_q,self.center)
+        self.q = np.vstack((new_q,self.center)) # NOT sure
 
     # Updates the center of the formation
     def update_center(self,new_center):
@@ -64,7 +64,7 @@ class formation_control:
         # Compute the control loop
         q_dot = np.zeros((self.n, 2))
         # If orbiting control is not selected each of the robot is going to converge to its desired shape position
-        if not self.rotation_control:
+        if not self.rotate:
             q_dot[self.id,:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:])
                 
         # If orbiting control is selected each of the robot is going to follow the next robot based on a Control gain (Kg)
@@ -81,7 +81,7 @@ class formation_control:
 
     def compute_inter_robot_positions(self, positions):
 
-        rel_pos = np.zeros((self.n*self.n, 2))
+        rel_pos = np.zeros(((self.n+1)*(self.n+1), 2))
         # Compute inter-robot relative positions
         for i in range(self.n+1):
             for j in range(self.n+1):
@@ -92,6 +92,7 @@ class formation_control:
 
 
     def generate_robot_positions(self):
+        print("construc:",self.shape)
         if self.shape not in ["line", "circle", "grid", "square", "star", "hexagon"]:
             raise ValueError("Invalid shape. Choose from 'line', 'circle', 'grid', 'square', 'star' or 'hexagon'.")
         positions = []
