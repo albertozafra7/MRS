@@ -6,14 +6,14 @@ class IPadress:
         self.host = host
         self.port = port
     
-# def readIPs(dirsF):
-#     # Create directions list with host and port information
-#     dirs = []
-#     for i, communicated_id in enumerate(communicated_ids):
-#         if communicated_id >= len(directions):
-#             raise ValueError(f"Not enough entries in directions file for robot {id}")
-#         host, port = directions[communicated_id].strip().split(':')
-#         dirs.append(IPadress(host,int(port)))
+def readIPs(directions):
+    # Create directions list with host and port information
+
+    dirs = []
+    for dir in directions:
+        host, port = dir.strip().split(':')
+        dirs.append(IPadress(host,int(port)))
+    return dirs
 
 def read_directions(id,connections,directions):
     """
@@ -66,7 +66,7 @@ def numRobsInGroup(idG,connections):
     nL = 0
     for line in connections:
         line_data = line.strip().split(',')
-        if line_data[2] == idG:
+        if int(line_data[2]) == idG:
             nL = nL+1
     return nL
 
@@ -119,13 +119,13 @@ def readIntialPositions(positions):
     return np.array(poses)
 
 def readShape(shapes):
-    shapes = []
+    sh = []
     
     for line in shapes:
         line_data = line.strip().split(',')
-        shapes.append(line_data[0])
+        sh.append(line_data[0])
     
-    return shapes
+    return sh
 
 def readRotations(shapes):
     rotations = []

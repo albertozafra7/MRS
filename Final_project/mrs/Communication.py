@@ -5,11 +5,19 @@ import time
 import numpy as np
 from multiprocessing import Process, Value, Array, Lock
 
+class MyServer(SimpleXMLRPCServer):
+    def __init__(self, addr, logRequests=False):
+        super().__init__(addr, logRequests)
+        self.should_stop = False
+
+    def serve_forever(self):
+        while not self.should_stop:
+            self.handle_request()
 
 class Communication:
-    def __init__(self, nL, nG, ip, port, dirs):
+    def __init__(self, nL, nG, idG, idL, ip, port, dirs):
 
-        print("Initializing communications...")
+        print("C:","Initializing communications...")
 
         # ++++++++++++++++ Custom Properties ++++++++++++++++
         self.ip = ip
@@ -17,6 +25,8 @@ class Communication:
         self.nG = nG
         self.port = port
         self.dirs = dirs
+        self.idG = idG
+        self.idL = idL
 
         # Robot positions nGxnLx3 --> nGxnLx(x,y,t)
         # self.poses = [[[None,None,-1] for _ in range(self.nL)] for _ in range(self.nG)]
@@ -38,24 +48,42 @@ class Communication:
         self.server = SimpleXMLRPCServer((self.ip, self.port))
         # Register the function as a service
         self.server.register_introspection_functions()  # Optional for introspection
+        self.server.register_function(self.RPC_get_positions, "RPC_get_positions")
+        self.server.register_function(self.RPC_get_position, "RPC_get_position") 
+        self.server.register_function(self.RPC_finish, "RPC_finish") 
         self.server.register_function(self.RPC_get_poses, "RPC_get_poses") 
         # Print a message and start serving requests
-        print("Server listening on port:",self.port)
+        print("C:","Server listening on port:",self.port)
+        
         self.srv = Process(target=self.service, args=())
-        self.srv.start()    
+        self.srv.start()
 
-        self.start_connections()
         self.tal = Process(target=self.talker, args=())
         self.tal.start()    
-        print("Talking")
+        print("C:","Talking")
 
     def service(self):
-        self.server.serve_forever()
+        cont = True
+        while cont:
+            self.server.handle_request()
+            with self.comm_lock:
+                cont = not self.finished.value
+        # self.server.serve_forever()
+
+    def RPC_get_positions(self):
+        with self.comm_lock:
+            return self.posesTo2Darray().tolist()
+    
+    def RPC_get_position(self):
+        with self.comm_lock:
+            return self.poses[self.idG,self.idL,:].tolist()
+
+    def RPC_finish(self):
+        self.finish()
+        return "ACK"
 
     def RPC_get_poses(self,p):
-        print("He recibido:",p)
         self.update_positions(np.array(p))
-        print("positions:",self.poses)
         return self.poses.tolist()
 
     def start_connections(self):
@@ -65,42 +93,44 @@ class Communication:
         for i in range(len(dirs_left)):
             self.server[i] = xmlrpc.client.Server("http://"+self.dirs[i].host+":"+str(self.dirs[i].port))
 
-            print(int(len(dirs_left)-np.sum(dirs_left)),"/",len(dirs_left)," Connected to: ",self.dirs[i].host,":",str(self.dirs[i].port))
+            print("C:",int(len(dirs_left)-np.sum(dirs_left)),"/",len(dirs_left)," Connected to: ",self.dirs[i].host,":",str(self.dirs[i].port))
 
 
     def talker(self):
 
         numDirs = len(self.dirs)
-        
+        cont = True
         try:
             i = 0
-            while not self.finished.value:
+            while cont:
                 # Create a socket object
                 # comm = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
                 HOST = self.dirs[i].host
                 PORT = self.dirs[i].port
-                print("T:talking to: ",HOST,":",PORT)
-                
+                # print("C:","T:talking to: ",HOST,":",PORT)
+
                 try:
                     # Create a server proxy object
                     self.poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
-                    # self.server[i].RPC_get_poses(self.poses.tolist())
                 except Exception as e:
-                    print("exception: ",e)
+                    print("C:","exception: ",e)
 
                 i = (i + 1) % numDirs
 
                 time.sleep(4)
+                with self.comm_lock:
+                    cont = not self.finished.value
         except:
-            print("exiting")        
+            pass
+        print("C:","exiting")        
         self.finished.value = False
 
     def update_positions(self,p):
         """
             [x,y,t]
         """
-        print("updating...")
+        # print("C:","updating...")
         # --- locked part ---
         with self.comm_lock:
             mask = np.array(self.poses[:,:,2] < p[:,:,2])
@@ -115,8 +145,8 @@ class Communication:
         with self.comm_lock:
             self.poses[group_id,robot_id,:] = pose
             
-            # print("Robot " + str(robot_id) + " is at " + str(pose))
-            # print(self.poses)
+            # print("C:","Robot " + str(robot_id) + " is at " + str(pose))
+            # print("C:",self.poses)
         # --- locked part ---
 
     def get_local_positions(self,group_id):
@@ -131,7 +161,7 @@ class Communication:
         # --- locked part ---
         with self.comm_lock:
             qLs = self.poses[group_id,:,:] # We store all the robot positions
-            print("positions2:",self.poses)
+            # print("C:","positions2:",self.poses)
         # --- locked part ---
 
         return qLs
@@ -158,6 +188,17 @@ class Communication:
 
         return qGs
 
+    def posesTo2Darray(self):
+        pos = np.zeros((self.nL*self.nG,2))
+        start_id = 0
+
+        for i in range(self.nG):
+            pos[start_id:start_id+self.nL,:] = self.poses[i,:,:1]
+            start_id += self.nL
+        
+        return pos
+
     def finish(self):
         with self.comm_lock:
-            self.finished = True
+            self.finished.value = True
+            print("C:","Robot with ip: "+ str(self.ip) + " has been killed")

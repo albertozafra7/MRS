@@ -37,7 +37,7 @@ class agent:
         self.stop_flag = False                                  # To enable safe deletion of the object
 
         # Communication properties
-        self.com = comm.Communication(self.nL, self.nG, ut.readIP(self.uid,dir_file), ut.readPort(self.uid,dir_file), ut.read_directions(self.uid,comm_file,dir_file))
+        self.com = comm.Communication(self.nL, self.nG, self.idG, self.idL, ut.readIP(self.uid,dir_file), ut.readPort(self.uid,dir_file), ut.read_directions(self.uid,comm_file,dir_file))
 
 
         # ++++++++++++ Methods initialization ++++++++++++
@@ -51,7 +51,7 @@ class agent:
 
     # Control simulation
     def simulate(self):
-        while not self.stop_flag:
+        while not self.com.finished.value:
 
             # -------- Global Control -------- 
 

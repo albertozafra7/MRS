@@ -6,8 +6,8 @@ import time     # import the time library for the timestamp
 from datetime import datetime
 import xmlrpc.client
 import utils as ut
-# import matplotlib
-# import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 import random
 import subprocess
 
@@ -23,7 +23,7 @@ class Simulator:
         self.dir_file = self.readFile(dir_file)     # IP directions file path (string) -> Contains the IPS of each robot 
         self.pos_file = self.readFile(pos_file)     # Initial positions file path (string) -> Contains the Intial positions of each robot as (uid,x,y)
         self.shapes_file = self.readFile(shape_file)# Shapes file path (string) -> Contains the list of shapes that we want to reconstruct as (shape(string),rotation(bool))
-        self.logs = logs_file                       # Logs file path (string)
+        self.logs = open(logs_file)
 
         # General control properties
         self.stop_flag = False                      # Stop flag to end the simulation
@@ -68,7 +68,7 @@ class Simulator:
         # ++++++++++++++ Methods Initialization ++++++++++++++
         self.initialize_robots(self.dir_file)
         print("S:Started")
-        time.sleep(5)
+        time.sleep(2)
         print("S:Simulating...")
         self.execute_simulation()
       
@@ -77,8 +77,10 @@ class Simulator:
     def execute_simulation(self):
         
         n_iters = 0
-        print("ITERATION: 0")
+
         while not self.stop_flag:
+            if n_iters%50:
+                print("ITERATION: ",n_iters)
                 
             self.update_poses()
             
@@ -90,7 +92,6 @@ class Simulator:
                 self.stop_flag = True
 
             n_iters += 1
-            if n_iters%100==0: print("ITERATION: ",n_iters)
 
         print("S:Terminating simulation")
         
@@ -214,69 +215,67 @@ class Simulator:
         except FileNotFoundError:
             raise FileNotFoundError(f"File not found: {file_path}")
 
-    # def random_color(self):
-    #     # Generate a random color
-    #     return (random.random(), random.random(), random.random())
+    def random_color(self):
+        # Generate a random color
+        return (random.random(), random.random(), random.random())
 
-    # def group_colors(self, n_robots):
-    #     # Divide robots into quarters
-    #     colors = [self.random_color()] * n_robots        
-    #     return colors
+    def group_colors(self, n_robots):
+        # Divide robots into quarters
+        colors = [self.random_color()] * n_robots        
+        return colors
 
-    # def colorize_robots(self):
+    def colorize_robots(self):
         
-    #     if not self.plt_colors and self.plt_group_cols:
-    #         self.plt_colors = [(0,0,1)] * (self.nR+1)
-    #         start_id = 0
-    #         # Groupd colors
-    #         for i in range(self.nG):
-    #             self.plt_colors[start_id:start_id+self.nL[i]] = self.group_colors()
-    #             start_id += self.nL[i]
+        if not self.plt_colors and self.plt_group_cols:
+            self.plt_colors = [(0,0,1)] * (self.nR+1)
+            start_id = 0
+            # Groupd colors
+            for i in range(self.nG):
+                self.plt_colors[start_id:start_id+self.nL[i]] = self.group_colors()
+                start_id += self.nL[i]
 
-    #         # The target color
-    #         self.plt_colors[-1] = [self.random_color()]
+            # The target color
+            self.plt_colors[-1] = [self.random_color()]
 
-    #     elif not self.plt_colors and self.plt_random_cols:
-    #         self.plt_colors = [self.random_color() for _ in range(self.nR+1)]
+        elif not self.plt_colors and self.plt_random_cols:
+            self.plt_colors = [self.random_color() for _ in range(self.nR+1)]
 
-    # def plot_evolution(self):
-    #     # Close the plot window to stop the simulation
-    #     if not plt.fignum_exists(self.fig):
-    #         print("S:Plot window closed.")
-    #         self.stop_flag = True
-    #         return
+    def plot_evolution(self):
+        # Close the plot window to stop the simulation
+        if not plt.fignum_exists(self.fig):
+            print("S:Plot window closed.")
+            self.stop_flag = True
+            return
 
-    #     plt.clf()  # Clear existing figure
-    #     # Set the limits of the figure
-    #     plt.xlim(-self.width, self.width)
-    #     plt.ylim(-self.height, self.height)
+        plt.clf()  # Clear existing figure
+        # Set the limits of the figure
+        plt.xlim(-self.width, self.width)
+        plt.ylim(-self.height, self.height)
 
-    #     # Plot the robots that will follow the formation as a blue dot
-    #     for i in range(self.nR):
-    #         if self.plt_group_cols or self.plt_random_cols:
-    #             plt.plot(self.q[i, 0], self.q[i, 1], 'o', color=self.plt_colors[i],ms=self.bot_size)
-    #         else:
-    #             plt.plot(self.q[i, 0], self.q[i, 1], 'bo', ms=self.bot_size)
+        # Plot the robots that will follow the formation as a blue dot
+        for i in range(self.nR):
+            if self.plt_group_cols or self.plt_random_cols:
+                plt.plot(self.q[i, 0], self.q[i, 1], 'o', color=self.plt_colors[i],ms=self.bot_size)
+            else:
+                plt.plot(self.q[i, 0], self.q[i, 1], 'bo', ms=self.bot_size)
 
-    #     if self.plt_group_cols or self.plt_random_cols:
-    #         plt.plot(self.qT[0], self.qT[1], 'o', color=self.plt_colors[-1],ms=self.bot_size)
-    #     else:
-    #         plt.plot(self.qT[0], self.qT[1], 'ro', ms=self.bot_size)
-    #     # Update the current figure number
-    #     self.fig = plt.gcf().number
+        if self.plt_group_cols or self.plt_random_cols:
+            plt.plot(self.qT[0], self.qT[1], 'o', color=self.plt_colors[-1],ms=self.bot_size)
+        else:
+            plt.plot(self.qT[0], self.qT[1], 'ro', ms=self.bot_size)
+        # Update the current figure number
+        self.fig = plt.gcf().number
 
-    #     # Update the figure and do a micro-pause
-    #     plt.draw()
-    #     plt.pause(0.001)
+        # Update the figure and do a micro-pause
+        plt.draw()
+        plt.pause(0.001)
 
     def log_evolution(self):
-        with open(self.logs, 'a') as file:
-            file.write(str(self.q))
         # x1,y1;x2,y2;x3,y3; .... |xT,yT\n
-        # for i in range(self.nR):
-        #     self.logs.write(self.q[i,0]+","+self.q[i,1])
-        #     if i < self.nR:
-        #         self.logs.write(";")
-        
-        # self.logs.write("|"+self.qT[0]+","+self.qT[1])
-        # self.logs.write("\n")
+        for i in range(self.nR):
+            self.logs.write(self.q[i,0]+","+self.q[i,1])
+            if i < self.nR:
+                self.logs.write(";")
+        self.logs.write("|"+self.qT[0]+","+self.qT[1])
+        self.logs.write("\n")
+
