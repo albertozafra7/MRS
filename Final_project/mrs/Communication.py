@@ -83,6 +83,7 @@ class Communication:
         return "ACK"
 
     def RPC_get_poses(self,p):
+        print("Hola, estoy en getposes me han pasado ", p)
         positions = self.update_positions(np.array(p))
         return positions.tolist()
 
@@ -194,7 +195,7 @@ class Communication:
 
             # We add the target position at the end
             qGs[i+1,:] = self.qT
-            print(self.poses)
+            # print(self.poses)
         # --- locked part ---
 
         # print(qGs)
