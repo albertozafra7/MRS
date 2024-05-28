@@ -56,9 +56,9 @@ class Communication:
                 
         self.srv = Process(target=self.service, args=())
         self.srv.start()
-        
+        print("C:","srv")
         self.tal = Process(target=self.talker, args=())
-        self.tal.start()    
+        self.tal.start()
         print("C:","Talking")
 
     def service(self):
