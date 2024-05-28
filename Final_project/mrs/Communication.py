@@ -116,7 +116,7 @@ class Communication:
                     # Create a server proxy object
                     with self.comm_lock:
                         print("C: Getting poses from server", HOST, PORT)
-                        new_poses = np.array(self.server.RPC_get_poses(self.poses.tolist()))#self.server[i].RPC_get_poses(self.poses.tolist()))
+                        new_poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
                         print("C: Received new poses:", new_poses)
                         np.copyto(self.poses, new_poses)  # Copy the new data into the existing shared array
                         print("C: Updated poses array:", self.poses)
