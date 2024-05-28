@@ -54,13 +54,13 @@ class Communication:
         self.server.register_function(self.RPC_get_poses, "RPC_get_poses") 
         # Print a message and start serving requests
         print("C:","Server listening on port:",self.port)
+                
+        self.srv = Process(target=self.service, args=())
+        self.srv.start()
         
         self.tal = Process(target=self.talker, args=())
         self.tal.start()    
         print("C:","Talking")
-        
-        self.srv = Process(target=self.service, args=())
-        self.srv.start()
 
     def service(self):
         cont = True
@@ -103,6 +103,7 @@ class Communication:
         cont = True
         try:
             i = 0
+            print("C: Initial finished value:", self.finished.value)
             while cont:
                 # Create a socket object
                 # comm = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -128,7 +129,8 @@ class Communication:
                 time.sleep(4)
                 with self.comm_lock:
                     cont = not self.finished.value
-        except:
+        except Exception as e:
+            print("C: talker exception: ", e)
             pass
         print("C:","exiting")        
         self.finished.value = False
