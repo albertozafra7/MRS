@@ -186,6 +186,7 @@ class Communication:
             qGs[i+1,:] = self.qT
         # --- locked part ---
 
+        print(qGs)
         return qGs
 
     def posesTo2Darray(self):
