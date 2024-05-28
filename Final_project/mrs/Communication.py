@@ -108,7 +108,7 @@ class Communication:
 
                 HOST = self.dirs[i].host
                 PORT = self.dirs[i].port
-                # print("C:","T:talking to: ",HOST,":",PORT)
+                print("C:","T:talking to: ",HOST,":",PORT)
 
                 try:
                     # Create a server proxy object
