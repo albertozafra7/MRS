@@ -98,7 +98,7 @@ class Communication:
 
 
     def talker(self):
-
+        print("T: Hemos llegado al talker")
         numDirs = len(self.dirs)
         cont = True
         try:
@@ -152,7 +152,6 @@ class Communication:
         """
             [x,y,t]
         """
-        print("C: Updating positions")
         # --- locked part ---
         with self.comm_lock:
             self.poses[group_id,robot_id,:] = pose
