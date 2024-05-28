@@ -277,10 +277,10 @@ class Simulator:
             # file.write(str(self.q))
             # x1,y1;x2,y2;x3,y3; .... |xT,yT\n
             for i in range(self.nR):
-                file.write(self.q[i,0]+","+self.q[i,1])
+                file.write(str(self.q[i,0])+","+str(self.q[i,1]))
                 if i < self.nR:
                     file.write(";")
             
-            file.write("|"+self.qT[0]+","+self.qT[1])
+            file.write("|"+str(self.qT[0])+","+str(self.qT[1]))
             file.write("\n")
         print("S: evolution stored")
