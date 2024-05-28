@@ -53,13 +53,14 @@ class Communication:
         self.RPCserver.register_function(self.RPC_get_poses, "RPC_get_poses") 
         # Print a message and start serving requests
         print("C:","Server listening on port:",self.port)
-                
-        self.srv = Process(target=self.service, args=())
-        self.srv.start()
-        print("C:","srv")
+        
         self.tal = Process(target=self.talker, args=())
         self.tal.start()
         print("C:","Talking")
+
+        self.srv = Process(target=self.service, args=())
+        self.srv.start()
+        print("C:","srv")
 
     def service(self):
         cont = True
