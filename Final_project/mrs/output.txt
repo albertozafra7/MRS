@@ -1,0 +1,49 @@
+S:Initializing simulation
+S:Starting...
+S:Connected to:  127.0.0.1 : 60031
+S:Connected to:  127.0.0.1 : 60032
+S:Connected to:  127.0.0.1 : 60033
+S:Connected to:  127.0.0.1 : 60034
+S:Connected to:  127.0.0.1 : 60035
+S:Connected to:  127.0.0.1 : 60036
+S:Connected to:  127.0.0.1 : 60037
+S:Connected to:  127.0.0.1 : 60038
+S:Connected to:  127.0.0.1 : 60039
+S:Started
+S:Simulating...
+ITERATION: 0
+S: UP:  0
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+construc: circle
+construc: line
+C: exception:  [Errno 111] Connection refused
+C: exception:  [Errno 111] Connection refused
+C: exception:  [Errno 111] Connection refused
+C: exception:  [Errno 111] Connection refused
+C: exception:  [Errno 111] Connection refused
+C: exception:  [Errno 111] Connection refused
+C: exception:  [Errno 111] Connection refused
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=0.25000000000000017 --qGy=-1.0 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=1.15 --qy=-3.25 --idG=2 --idL=2 --uid=8
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=0.25000000000000017 --qGy=-1.0 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=5.15 --qy=2.25 --idG=2 --idL=1 --uid=7
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=-0.4166666666666667 --qGy=1.5333333333333332 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=4.25 --qy=5.45 --idG=1 --idL=1 --uid=4
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=0.85 --qGy=2.0 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=3.25 --qy=-1.15 --idG=0 --idL=2 --uid=2
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=0.85 --qGy=2.0 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=1.55 --qy=2.0 --idG=0 --idL=0 --uid=0
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=-0.4166666666666667 --qGy=1.5333333333333332 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=-1.25 --qy=-4.0 --idG=1 --idL=0 --uid=3
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=0.25000000000000017 --qGy=-1.0 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=-5.55 --qy=-2.0 --idG=2 --idL=0 --uid=6
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=-0.4166666666666667 --qGy=1.5333333333333332 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=-4.25 --qy=3.15 --idG=1 --idL=2 --uid=5
+$:  python3 ./bot_initializer.py --nL=3 --nG=3 --shapeL=circle --qGx=0.85 --qGy=2.0 --shapeG=line --qTx=0.0 --qTy=0.0 --dirsF=./params/ips.txt --connF=./params/connections.txt --qx=-2.25 --qy=5.15 --idG=0 --idL=1 --uid=1

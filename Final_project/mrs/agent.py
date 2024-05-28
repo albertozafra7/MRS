@@ -10,7 +10,7 @@ import Communication as comm
 
 class agent:
 
-    def __init__(self, num_robots, num_groups, uid, idL, initial_poseL, shapeL, idG, initial_poseG, shapeG, initial_poseT, dir_file, comm_file, rotationL=False, rotationG=False, dt=0.1, KcL=15, KgL=10, KcG=15, KgG=10):
+    def __init__(self, num_robots, num_groups, uid, idL, initial_poseL, shapeL, idG, initial_poseG, shapeG, initial_poseT, dir_file, comm_file, rotationL=False, rotationG=False, dt=0.001, KcL=15, KgL=10, KcG=15, KgG=10):
 
         # ++++++++++++ Custom Properties ++++++++++++
         # Constants
@@ -53,38 +53,46 @@ class agent:
 
     # Control simulation
     def simulate(self):
-        while not self.com.finished.value:
+        while not self.com.finished:
 
             # -------- Global Control -------- 
-
+            # print("DEB: globP...")
             # We get all the global positions
             qGs = self.com.get_global_positions()
 
             self.qT = qGs[-1,:] # We update the target positions
             self.qG[:,:] = qGs[:self.nG,:]  # We update the group positions
-
+            
+            # print("DEB: upC...")
             # We update the global control
             self.formationG.update_center(self.qT[:2])  # We update the center position within the global formation
+            # print("DEB: upP...")
             self.formationG.update_poses(self.qG[:,:2]) # We update the group positions within the global formation
 
             # We execute the global control
+            # print("DEB: exeG...")
             self.formationG.execute_control()
             self.qG[self.idG,:] = np.append(self.formationG.get_agent_pose(),time.time()) # We update the current group position
 
             # -------- Local Control -------- 
 
             # We get all the local positions
+            # print("DEB: locP...")
             self.qL = self.com.get_local_positions(group_id=self.idG)
 
             # We update the local control
+            # print("DEB: upC2...")
             self.formationL.update_center(self.qG[self.idG,:2]) # We update the center position within the local formation
+            # print("DEB: upP2...")
             self.formationL.update_poses(self.qL[:,:2])         # We update the agent positions within the local formation 
 
             # We execute the local control
+            # print("DEB: exeL...")
             self.formationL.execute_control()
             self.qL[self.idL,:] = np.append(self.formationL.get_agent_pose(), time.time()) # We update the current agent position
 
             # We update the new computed position to the communication system
+            # print("DEB: upP2...")
             self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
             
             # print("A: Agent " + str(self.uid) + " has the following qs")

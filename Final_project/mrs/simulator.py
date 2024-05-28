@@ -8,6 +8,7 @@ import xmlrpc.client
 import utils as ut
 import random
 import subprocess
+from print_colors import bcolors
 
 class Simulator:
 
@@ -66,7 +67,7 @@ class Simulator:
         # ++++++++++++++ Methods Initialization ++++++++++++++
         self.initialize_robots(self.dir_file)
         print("S:Started")
-        time.sleep(3)
+        time.sleep(0.3)
         print("S:Simulating...")
         self.execute_simulation()
       
@@ -88,7 +89,7 @@ class Simulator:
                 self.stop_flag = True
 
             n_iters += 1
-            if n_iters%100==0: print("ITERATION: ",n_iters)
+            if n_iters%50==0: print(bcolors.HEADER + bcolors.CGREENBG + "\n\n--------ITERATION: " + str(n_iters) + bcolors.CEND + "\n\n")
             
             time.sleep(0.02)
 
@@ -153,7 +154,8 @@ class Simulator:
         """
 
         # Construct the complete command string with argument formatting
-        command = f"ssh a876628@{ip.host} python3 ./mrs/bot_initializer.py --nL={str(num_robots)} --nG={str(num_groups)} --shapeL={shapeL} --qGx={str(initial_poseG[0])} --qGy={str(initial_poseG[1])} --shapeG={shapeG} --qTx={str(initial_poseT[0])} --qTy={str(initial_poseT[1])} --dirsF=./mrs/params/ips.txt --connF=./mrs/params/connections.txt --qx={str(initial_poseL[0])} --qy={str(initial_poseL[1])} --idG={str(idG)} --idL={str(idL)} --uid={str(uid)}"
+        # command = f"ssh a800839@{ip.host} python3 ./mrs/bot_initializer.py --nL={str(num_robots)} --nG={str(num_groups)} --shapeL={shapeL} --qGx={str(initial_poseG[0])} --qGy={str(initial_poseG[1])} --shapeG={shapeG} --qTx={str(initial_poseT[0])} --qTy={str(initial_poseT[1])} --dirsF=./mrs/params/ips.txt --connF=./mrs/params/connections.txt --qx={str(initial_poseL[0])} --qy={str(initial_poseL[1])} --idG={str(idG)} --idL={str(idL)} --uid={str(uid)}"
+        command = f"python3 ./bot_initializer.py --nL={str(num_robots)} --nG={str(num_groups)} --shapeL={shapeL} --qGx={str(initial_poseG[0])} --qGy={str(initial_poseG[1])} --shapeG={shapeG} --qTx={str(initial_poseT[0])} --qTy={str(initial_poseT[1])} --dirsF=./params/ips.txt --connF=./params/connections.txt --qx={str(initial_poseL[0])} --qy={str(initial_poseL[1])} --idG={str(idG)} --idL={str(idL)} --uid={str(uid)}"
         print("$: ",command)
         # if rotationL:
         #     command += " --rotaionL=True"
@@ -204,6 +206,7 @@ class Simulator:
     def update_poses(self):
         # self.q = np.array(self.server[0].RPC_get_positions())
         for uid in range(self.nR):
+            print("S: UP: ",uid)
             self.update_pose(uid)
     
     # TODO: Move target

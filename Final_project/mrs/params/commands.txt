@@ -32,7 +32,7 @@ python3 bot_initializer.py --nL=2 --nG=2 --shapeL=circle --qGx=0 --qGy=0 --shape
 python3 bot_initializer.py --nL=2 --nG=2 --shapeL=circle --qGx=0 --qGy=0 --shapeG=line --qTx=1 --qTy=-1 --dirsF=ips.txt --connF=connections.txt --rotationL=true --rotationG=true --qx=-1 --qy=-1 --idG=0 --idL=1 --uid=1
 
 
-python3 plotter.py --conn_file=./params/connections.txt --logs_file=./logs/logs.txt --w_height=60 --w_width=60 --bot_size=5
+python3 plotter.py --conn_file=./params/connections.txt --logs_file=./logs/logs.txt --w_height=6 --w_width=6 --bot_size=5
 
 ######## Lo que he hecho para que me funcione:
 --> Primero hago un push de los cambios locales que he hecho en mi pc
