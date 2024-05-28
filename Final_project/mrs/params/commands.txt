@@ -19,7 +19,7 @@ python3 pruebas.py --conns connections.txt --dirs ips.txt --id 0
     parser.add_argument('--rotationL', dest='rotationL', type=bool, help='Initial x target pose')
     parser.add_argument('--rotationG', dest='rotationG', type=bool, help='Initial y target pose')
 
-ssh a800839@central.cps.unizar.es "cd mrs; python3 main.py --conn_file=./params/connections.txt --dir_file=./params/ips.txt --pos_file=./params/initial_poses.txt --shape_file=./params/shapes.txt --logs_file=./logs/logs.txt"
+ssh a876628@central.cps.unizar.es "cd mrs; python3 main.py --conn_file=./params/connections.txt --dir_file=./params/ips.txt --pos_file=./params/initial_poses.txt --shape_file=./params/shapes.txt --logs_file=./logs/logs.txt"
 
 python3 main.py --conn_file=./params/connections.txt --dir_file=./params/ips.txt --pos_file=./params/initial_poses.txt --shape_file=./params/shapes.txt --logs_file=./logs/logs.txt
 

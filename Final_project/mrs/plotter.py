@@ -152,7 +152,7 @@ class Simulator:
         """
 
         # Construct the complete command string with argument formatting
-        command = f"ssh a800839@{ip.host} python3 ./mrs/bot_initializer.py --nL={str(num_robots)} --nG={str(num_groups)} --shapeL={shapeL} --qGx={str(initial_poseG[0])} --qGy={str(initial_poseG[1])} --shapeG={shapeG} --qTx={str(initial_poseT[0])} --qTy={str(initial_poseT[1])} --dirsF=./mrs/params/ips.txt --connF=./mrs/params/connections.txt --qx={str(initial_poseL[0])} --qy={str(initial_poseL[1])} --idG={str(idG)} --idL={str(idL)} --uid={str(uid)}"
+        command = f"ssh a876628@{ip.host} python3 ./mrs/bot_initializer.py --nL={str(num_robots)} --nG={str(num_groups)} --shapeL={shapeL} --qGx={str(initial_poseG[0])} --qGy={str(initial_poseG[1])} --shapeG={shapeG} --qTx={str(initial_poseT[0])} --qTy={str(initial_poseT[1])} --dirsF=./mrs/params/ips.txt --connF=./mrs/params/connections.txt --qx={str(initial_poseL[0])} --qy={str(initial_poseL[1])} --idG={str(idG)} --idL={str(idL)} --uid={str(uid)}"
         print("$: ",command)
         # if rotationL:
         #     command += " --rotaionL=True"
