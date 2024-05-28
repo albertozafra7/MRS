@@ -41,6 +41,9 @@ class Communication:
         self.comm_lock = Lock()
         self.finished = Value('b',0)
         
+        self.start_connections()
+        
+        
     def start_servers(self):
         # +++++++++++++ Methods Initialization ++++++++++++++
         # Create a server instance with a listening port
@@ -113,7 +116,7 @@ class Communication:
                 print("C:","T:talking to: ",HOST,":",PORT)
 
                 try:
-                    # Create a server proxy object
+                    # Create a server proxy object  
                     with self.comm_lock:
                         print("C: Getting poses from server", HOST, PORT)
                         new_poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
