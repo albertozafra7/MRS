@@ -40,18 +40,17 @@ class Communication:
         # Locks and stop control
         self.comm_lock = Lock()
         self.finished = Value('b',0)
-
-
-    def start_servers(self):
+        
+    # def start_servers(self):
         # +++++++++++++ Methods Initialization ++++++++++++++
         # Create a server instance with a listening port
-        self.server = SimpleXMLRPCServer((self.ip, self.port))
+        self.RPCserver = SimpleXMLRPCServer((self.ip, self.port))
         # Register the function as a service
-        self.server.register_introspection_functions()  # Optional for introspection
-        self.server.register_function(self.RPC_get_positions, "RPC_get_positions")
-        self.server.register_function(self.RPC_get_position, "RPC_get_position") 
-        self.server.register_function(self.RPC_finish, "RPC_finish") 
-        self.server.register_function(self.RPC_get_poses, "RPC_get_poses") 
+        self.RPCserver.register_introspection_functions()  # Optional for introspection
+        self.RPCserver.register_function(self.RPC_get_positions, "RPC_get_positions")
+        self.RPCserver.register_function(self.RPC_get_position, "RPC_get_position") 
+        self.RPCserver.register_function(self.RPC_finish, "RPC_finish") 
+        self.RPCserver.register_function(self.RPC_get_poses, "RPC_get_poses") 
         # Print a message and start serving requests
         print("C:","Server listening on port:",self.port)
                 
@@ -65,7 +64,7 @@ class Communication:
     def service(self):
         cont = True
         while cont:
-            self.server.handle_request()
+            self.RPCserver.handle_request()
             with self.comm_lock:
                 cont = not self.finished.value
         # self.server.serve_forever()
