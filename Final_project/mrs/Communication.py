@@ -86,7 +86,7 @@ class Communication:
         return "ACK"
 
     def RPC_get_poses(self,p):
-        print("Hola, estoy en getposes me han pasado ", p)
+        # print("Hola, estoy en getposes me han pasado ", p)
         positions = self.update_positions(np.array(p))
         return positions.tolist()
 
@@ -101,35 +101,35 @@ class Communication:
 
 
     def talker(self):
-        print("T: Hemos llegado al talker")
+        # print("T: Hemos llegado al talker")
         numDirs = len(self.dirs)
         cont = True
         try:
             i = 0
-            print("C: Initial finished value:", self.finished.value)
+            # print("C: Initial finished value:", self.finished.value)
             while cont:
                 # Create a socket object
                 # comm = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
                 HOST = self.dirs[i].host
                 PORT = self.dirs[i].port
-                print("C:","T:talking to: ",HOST,":",PORT)
+                # print("C:","T:talking to: ",HOST,":",PORT)
 
                 try:
                     # Create a server proxy object  
                     with self.comm_lock:
-                        print("C: Getting poses from server", HOST, PORT)
+                        # print("C: Getting poses from server", HOST, PORT)
                         new_poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
-                        print("C: Received new poses:", new_poses)
+                        # print("C: Received new poses:", new_poses)
                         np.copyto(self.poses, new_poses)  # Copy the new data into the existing shared array
-                        print("C: Updated poses array:", self.poses)
+                        # print("C: Updated poses array:", self.poses)
 
                 except Exception as e:
                     print("C:","exception: ",e)
 
                 i = (i + 1) % numDirs
 
-                time.sleep(0.1)
+                time.sleep(0.01)
                 with self.comm_lock:
                     cont = not self.finished.value
         except Exception as e:

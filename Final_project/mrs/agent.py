@@ -10,7 +10,7 @@ import Communication as comm
 
 class agent:
 
-    def __init__(self, num_robots, num_groups, uid, idL, initial_poseL, shapeL, idG, initial_poseG, shapeG, initial_poseT, dir_file, comm_file, rotationL=False, rotationG=False, dt=0.01, KcL=15, KgL=10, KcG=15, KgG=10):
+    def __init__(self, num_robots, num_groups, uid, idL, initial_poseL, shapeL, idG, initial_poseG, shapeG, initial_poseT, dir_file, comm_file, rotationL=False, rotationG=False, dt=0.1, KcL=15, KgL=10, KcG=15, KgG=10):
 
         # ++++++++++++ Custom Properties ++++++++++++
         # Constants
@@ -92,7 +92,7 @@ class agent:
             # print("qG = " + str(self.com.get_global_positions()))
 
             # Maybe here a pause is needed???
-            time.sleep(0.02)
+            time.sleep(0.01)
             
 
 

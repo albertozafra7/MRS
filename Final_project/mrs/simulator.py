@@ -89,6 +89,8 @@ class Simulator:
 
             n_iters += 1
             if n_iters%100==0: print("ITERATION: ",n_iters)
+            
+            time.sleep(0.02)
 
         print("S:Terminating simulation")
         self.kill_agents()
