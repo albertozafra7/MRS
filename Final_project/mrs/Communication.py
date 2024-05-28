@@ -41,7 +41,7 @@ class Communication:
         self.comm_lock = Lock()
         self.finished = Value('b',0)
         
-    # def start_servers(self):
+    def start_servers(self):
         # +++++++++++++ Methods Initialization ++++++++++++++
         # Create a server instance with a listening port
         self.RPCserver = SimpleXMLRPCServer((self.ip, self.port))
@@ -58,9 +58,8 @@ class Communication:
         self.srv.start()
         print("C:","srv")
         
-        # self.tal = Process(target=self.talker, args=())
-        # self.tal.start()
-        self.talker()
+        self.tal = Process(target=self.talker, args=())
+        self.tal.start()
         print("C:","Talking")
 
     def service(self):
