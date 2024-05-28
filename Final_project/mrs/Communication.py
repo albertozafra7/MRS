@@ -115,7 +115,7 @@ class Communication:
                     # Create a server proxy object
                     with self.comm_lock:
                         print("C: Getting poses from server", HOST, PORT)
-                        new_poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
+                        new_poses = np.array(self.server.RPC_get_poses(self.poses.tolist()))#self.server[i].RPC_get_poses(self.poses.tolist()))
                         print("C: Received new poses:", new_poses)
                         np.copyto(self.poses, new_poses)  # Copy the new data into the existing shared array
                         print("C: Updated poses array:", self.poses)
@@ -152,6 +152,7 @@ class Communication:
         """
             [x,y,t]
         """
+        print("C: Updating positions")
         # --- locked part ---
         with self.comm_lock:
             self.poses[group_id,robot_id,:] = pose
@@ -184,6 +185,7 @@ class Communication:
             [x,y,t]
             [xT,yT,tT]
         """
+        print("C: sending global positions")
         # We generate the array for storing the group positions
         qGs = np.zeros((self.nG+1,3))
 
@@ -195,7 +197,6 @@ class Communication:
 
             # We add the target position at the end
             qGs[i+1,:] = self.qT
-            # print(self.poses)
         # --- locked part ---
 
         # print(qGs)

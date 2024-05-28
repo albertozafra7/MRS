@@ -6,8 +6,6 @@ import time     # import the time library for the timestamp
 from datetime import datetime
 import xmlrpc.client
 import utils as ut
-# import matplotlib
-# import matplotlib.pyplot as plt
 import random
 import subprocess
 
@@ -216,60 +214,6 @@ class Simulator:
         except FileNotFoundError:
             raise FileNotFoundError(f"File not found: {file_path}")
 
-    # def random_color(self):
-    #     # Generate a random color
-    #     return (random.random(), random.random(), random.random())
-
-    # def group_colors(self, n_robots):
-    #     # Divide robots into quarters
-    #     colors = [self.random_color()] * n_robots        
-    #     return colors
-
-    # def colorize_robots(self):
-        
-    #     if not self.plt_colors and self.plt_group_cols:
-    #         self.plt_colors = [(0,0,1)] * (self.nR+1)
-    #         start_id = 0
-    #         # Groupd colors
-    #         for i in range(self.nG):
-    #             self.plt_colors[start_id:start_id+self.nL[i]] = self.group_colors()
-    #             start_id += self.nL[i]
-
-    #         # The target color
-    #         self.plt_colors[-1] = [self.random_color()]
-
-    #     elif not self.plt_colors and self.plt_random_cols:
-    #         self.plt_colors = [self.random_color() for _ in range(self.nR+1)]
-
-    # def plot_evolution(self):
-    #     # Close the plot window to stop the simulation
-    #     if not plt.fignum_exists(self.fig):
-    #         print("S:Plot window closed.")
-    #         self.stop_flag = True
-    #         return
-
-    #     plt.clf()  # Clear existing figure
-    #     # Set the limits of the figure
-    #     plt.xlim(-self.width, self.width)
-    #     plt.ylim(-self.height, self.height)
-
-    #     # Plot the robots that will follow the formation as a blue dot
-    #     for i in range(self.nR):
-    #         if self.plt_group_cols or self.plt_random_cols:
-    #             plt.plot(self.q[i, 0], self.q[i, 1], 'o', color=self.plt_colors[i],ms=self.bot_size)
-    #         else:
-    #             plt.plot(self.q[i, 0], self.q[i, 1], 'bo', ms=self.bot_size)
-
-    #     if self.plt_group_cols or self.plt_random_cols:
-    #         plt.plot(self.qT[0], self.qT[1], 'o', color=self.plt_colors[-1],ms=self.bot_size)
-    #     else:
-    #         plt.plot(self.qT[0], self.qT[1], 'ro', ms=self.bot_size)
-    #     # Update the current figure number
-    #     self.fig = plt.gcf().number
-
-    #     # Update the figure and do a micro-pause
-    #     plt.draw()
-    #     plt.pause(0.001)
 
     def log_evolution(self):
         with open(self.logs, 'a') as file:
