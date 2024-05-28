@@ -80,6 +80,7 @@ class Communication:
 
     def RPC_finish(self):
         self.finish()
+        self.stop_servers()
         return "ACK"
 
     def RPC_get_poses(self,p):
