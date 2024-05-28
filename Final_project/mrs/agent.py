@@ -84,9 +84,14 @@ class agent:
 
             # We update the new computed position to the communication system
             self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
+            
+            print("A: Agent " + str(self.uid) + " has the following qs")
+            print("qL = " + str(self.qL))
+            print("qG = " + str(self.qG))
 
             # Maybe here a pause is needed???
             time.sleep(0.02)
+            
 
 
 
