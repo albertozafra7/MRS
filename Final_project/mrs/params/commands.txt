@@ -44,3 +44,5 @@ Pasos:
 (en central) ssh a876628@155.210.154.204
 (en el remoto) rm -r mrs
 (en el remoto) cp -r Documents/MRS/Final_project/mrs ./
+(en central) python3 main.py --conn_file=./params/connections.txt --dir_file=./params/ips.txt --pos_file=./params/initial_poses.txt --shape_file=./params/shapes.txt --logs_file=./logs/logs.txt
+
