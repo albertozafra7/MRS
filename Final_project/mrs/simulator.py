@@ -272,7 +272,6 @@ class Simulator:
     #     plt.pause(0.001)
 
     def log_evolution(self):
-        print("S: storing evolution")
         with open(self.logs, 'a') as file:
             # file.write(str(self.q))
             # x1,y1;x2,y2;x3,y3; .... |xT,yT\n
@@ -283,4 +282,3 @@ class Simulator:
             
             file.write("|"+str(self.qT[0])+","+str(self.qT[1]))
             file.write("\n")
-        print("S: evolution stored")

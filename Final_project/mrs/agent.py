@@ -86,7 +86,7 @@ class agent:
             self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
 
             # Maybe here a pause is needed???
-            time.sleep(1.5)
+            time.sleep(0.02)
 
 
 

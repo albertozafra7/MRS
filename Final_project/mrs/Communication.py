@@ -125,7 +125,6 @@ class Communication:
             pass
         print("C:","exiting")        
         self.finished.value = False
-        self.stop_servers()
 
     def update_positions(self,p):
         """
