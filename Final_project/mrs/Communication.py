@@ -55,12 +55,12 @@ class Communication:
         # Print a message and start serving requests
         print("C:","Server listening on port:",self.port)
         
-        self.srv = Process(target=self.service, args=())
-        self.srv.start()
-
         self.tal = Process(target=self.talker, args=())
         self.tal.start()    
         print("C:","Talking")
+        
+        self.srv = Process(target=self.service, args=())
+        self.srv.start()
 
     def service(self):
         cont = True
@@ -185,7 +185,7 @@ class Communication:
             [x,y,t]
             [xT,yT,tT]
         """
-        print("C: sending global positions")
+        # print("C: sending global positions")
         # We generate the array for storing the group positions
         qGs = np.zeros((self.nG+1,3))
 
