@@ -115,7 +115,7 @@ class Communication:
                     with self.comm_lock:
                         new_poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
                         np.copyto(self.poses, new_poses)  # Copy the new data into the existing shared array
-                        print(self.poses)
+
                 except Exception as e:
                     print("C:","exception: ",e)
 
@@ -191,6 +191,7 @@ class Communication:
 
             # We add the target position at the end
             qGs[i+1,:] = self.qT
+            print(self.poses)
         # --- locked part ---
 
         # print(qGs)
