@@ -129,7 +129,7 @@ class Communication:
 
                 i = (i + 1) % numDirs
 
-                time.sleep(4)
+                time.sleep(0.1)
                 with self.comm_lock:
                     cont = not self.finished.value
         except Exception as e:

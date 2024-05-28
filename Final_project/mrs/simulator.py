@@ -66,7 +66,7 @@ class Simulator:
         # ++++++++++++++ Methods Initialization ++++++++++++++
         self.initialize_robots(self.dir_file)
         print("S:Started")
-        time.sleep(15)
+        time.sleep(3)
         print("S:Simulating...")
         self.execute_simulation()
       
@@ -88,7 +88,7 @@ class Simulator:
                 self.stop_flag = True
 
             n_iters += 1
-            print("ITERATION: ",n_iters)
+            if n_iters%100==0: print("ITERATION: ",n_iters)
 
         print("S:Terminating simulation")
         self.kill_agents()
