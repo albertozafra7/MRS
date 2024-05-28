@@ -42,8 +42,8 @@ class agent:
 
         # ++++++++++++ Methods initialization ++++++++++++
         # We update the new computed position to the communication system
-        self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
         self.com.start_servers()
+        self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
 
         # We start the simulation
         self.simulate()

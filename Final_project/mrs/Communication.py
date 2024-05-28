@@ -125,6 +125,7 @@ class Communication:
             pass
         print("C:","exiting")        
         self.finished.value = False
+        self.stop_servers()
 
     def update_positions(self,p):
         """
@@ -198,6 +199,12 @@ class Communication:
         
         return pos
 
+    def stop_servers(self):
+        if self.server:
+            self.server.shutdown()
+            self.server.server_close()
+            print(f"Server stopped on {self.ip}:{self.port}")
+    
     def finish(self):
         with self.comm_lock:
             self.finished.value = True

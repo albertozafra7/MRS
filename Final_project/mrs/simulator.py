@@ -68,7 +68,7 @@ class Simulator:
         # ++++++++++++++ Methods Initialization ++++++++++++++
         self.initialize_robots(self.dir_file)
         print("S:Started")
-        time.sleep(5)
+        time.sleep(15)
         print("S:Simulating...")
         self.execute_simulation()
       
