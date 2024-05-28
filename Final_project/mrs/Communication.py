@@ -113,7 +113,8 @@ class Communication:
                 try:
                     # Create a server proxy object
                     with self.comm_lock:
-                        self.poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
+                        new_poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
+                        np.copyto(self.poses, new_poses)  # Copy the new data into the existing shared array
                 except Exception as e:
                     print("C:","exception: ",e)
 
