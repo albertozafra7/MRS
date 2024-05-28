@@ -30,3 +30,17 @@ python3 bot_initializer.py --nL=2 --nG=2 --shapeL=circle --qGx=0 --qGy=0 --shape
 
 
 python3 plotter.py --conn_file=./params/connections.txt --logs_file=./logs/logs.txt --w_height=60 --w_width=60 --bot_size=5
+
+######## Lo que he hecho para que me funcione:
+--> Primero hago un push de los cambios locales que he hecho en mi pc
+--> Luego hago un pull en una carpeta de central
+--> finalmente me conecto a una ip del lab102, borro la carpeta antigua de mrs y copio la nueva
+
+
+Pasos:
+
+(en local) git push
+(en central) git pull
+(en central) ssh a876628@155.210.154.204
+(en el remoto) rm -r mrs
+(en el remoto) cp -r Documents/MRS/Final_project/mrs ./
