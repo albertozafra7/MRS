@@ -83,8 +83,8 @@ class Communication:
         return "ACK"
 
     def RPC_get_poses(self,p):
-        self.update_positions(np.array(p))
-        return self.poses.tolist()
+        positions = self.update_positions(np.array(p))
+        return positions.tolist()
 
     def start_connections(self):
         dirs_left = np.ones(len(self.dirs))
@@ -130,12 +130,16 @@ class Communication:
         """
             [x,y,t]
         """
+        returned_p = []
         # print("C:","updating...")
         # --- locked part ---
         with self.comm_lock:
             mask = np.array(self.poses[:,:,2] < p[:,:,2])
             self.poses[mask] = p[mask]
+            returned_p = self.poses
         # --- locked part ---
+        
+        return returned_p
 
     def update_position(self,group_id, robot_id, pose):
         """
