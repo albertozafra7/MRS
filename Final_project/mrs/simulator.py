@@ -93,6 +93,8 @@ class Simulator:
             if n_iters%100==0: print("ITERATION: ",n_iters)
 
         print("S:Terminating simulation")
+        self.kill_agents()
+        
         
             
     def initialize_robots(self,dirsF):
@@ -200,9 +202,9 @@ class Simulator:
         # --- locked part ---
     
     def update_poses(self):
-        self.q = np.array(self.server[0].RPC_get_positions())
-        # for uid in range(self.nR):
-        #     self.update_pose(uid)
+        # self.q = np.array(self.server[0].RPC_get_positions())
+        for uid in range(self.nR):
+            self.update_pose(uid)
     
     # TODO: Move target
     
@@ -271,12 +273,12 @@ class Simulator:
 
     def log_evolution(self):
         with open(self.logs, 'a') as file:
-            file.write(str(self.q))
-        # x1,y1;x2,y2;x3,y3; .... |xT,yT\n
-        # for i in range(self.nR):
-        #     self.logs.write(self.q[i,0]+","+self.q[i,1])
-        #     if i < self.nR:
-        #         self.logs.write(";")
-        
-        # self.logs.write("|"+self.qT[0]+","+self.qT[1])
-        # self.logs.write("\n")
+            # file.write(str(self.q))
+            # x1,y1;x2,y2;x3,y3; .... |xT,yT\n
+            for i in range(self.nR):
+                file.write(self.q[i,0]+","+self.q[i,1])
+                if i < self.nR:
+                    file.write(";")
+            
+            file.write("|"+self.qT[0]+","+self.qT[1])
+            file.write("\n")
