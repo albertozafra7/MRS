@@ -112,7 +112,8 @@ class Communication:
 
                 try:
                     # Create a server proxy object
-                    self.poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
+                    with self.comm_lock:
+                        self.poses = np.array(self.server[i].RPC_get_poses(self.poses.tolist()))
                 except Exception as e:
                     print("C:","exception: ",e)
 

@@ -85,9 +85,9 @@ class agent:
             # We update the new computed position to the communication system
             self.com.update_position(self.idG, self.idL, self.qL[self.idL,:])
             
-            print("A: Agent " + str(self.uid) + " has the following qs")
-            print("qL = " + str(self.com.get_local_positions(group_id=self.idG)))
-            print("qG = " + str(self.com.get_global_positions()))
+            # print("A: Agent " + str(self.uid) + " has the following qs")
+            # print("qL = " + str(self.com.get_local_positions(group_id=self.idG)))
+            # print("qG = " + str(self.com.get_global_positions()))
 
             # Maybe here a pause is needed???
             time.sleep(0.02)
