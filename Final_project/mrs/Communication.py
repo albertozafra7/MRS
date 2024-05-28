@@ -76,7 +76,7 @@ class Communication:
     
     def RPC_get_position(self):
         with self.comm_lock:
-            return self.poses[self.idG,self.idL,:].tolist()
+            return self.poses[self.idG,self.idL,:2].tolist()
 
     def RPC_finish(self):
         self.finish()
