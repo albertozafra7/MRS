@@ -84,7 +84,7 @@ class agent:
 
             # We update the local control
             # print("DEB: upC2...")
-            # self.formationL.update_center(self.qG[self.idG,:2]) # We update the center position within the local formation
+            self.formationL.update_center(self.qG[self.idG,:2]) # We update the center position within the local formation
             # print("DEB: upP2...")
             self.formationL.update_poses(self.qL[:,:2])         # We update the agent positions within the local formation 
 

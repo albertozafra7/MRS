@@ -233,7 +233,7 @@ class formation_control:
 
         # positions.append([0,0])
         # return np.array(positions)
-        positions += self.center
+        #positions[:] = positions[:] + self.center
         positions.append([self.center[0], self.center[1]])
         return np.array(positions)
     
