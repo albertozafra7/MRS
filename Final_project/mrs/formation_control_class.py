@@ -67,22 +67,27 @@ class formation_control:
         q_Ni = -Q[self.n-1::self.n] # Current distance between the robot and the target
         c_Ni = -C[self.n-1::self.n] # Desired distance between the robot and the target
         
-        # Compute the control loop
-        q_dot = np.zeros(2)
-        # If orbiting control is not selected each of the robot is going to converge to its desired shape position
-        if not self.rotate:
-            q_dot[:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:])
-            
-        # If orbiting control is selected each of the robot is going to follow the next robot based on a Control gain (Kg)
-        else: 
-            if self.id < self.n-2:
-                q_dot[:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:]) - self.Kg * (q_Ni[self.id+1,:] - q_Ni[self.id,:]) 
-            else:
-                q_dot[:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:]) - self.Kg * (q_Ni[0,:] - q_Ni[self.id,:])
-            
+       # Compute the control loop
+        q_dot = np.zeros((self.n, 2))
+        for agent in range(self.n):
+            # If orbiting control is not selected each of the robot is going to converge to its desired shape position
+            if not self.rotate:
+                # q_dot[agent,:] = self.Kc * (q_Ni[agent,:] - R @ c_Ni[agent,:]) - self.Kc * (self.center - self.c[-1,:])
+                q_dot[agent,:] = self.Kc * (q_Ni[agent,:] - R @ c_Ni[agent,:])
+                
+            # If orbiting control is selected each of the robot is going to follow the next robot based on a Control gain (Kg)
+            else: 
+                if agent < self.n-1:
+                    # q_dot[agent,:] = self.Kc * (q_Ni[agent,:] - R @ c_Ni[agent,:]) - self.Kg * (q_Ni[agent+1,:] - q_Ni[agent,:]) - self.Kc * (self.center - self.c[-1,:])
+                    q_dot[agent,:] = self.Kc * (q_Ni[agent,:] - R @ c_Ni[agent,:]) - self.Kg * (q_Ni[agent+1,:] - q_Ni[agent,:])
+                else:
+                    # q_dot[self.n-2,:] = self.Kc * (q_Ni[self.n-2,:] - R @ c_Ni[self.n-2,:]) - self.Kg * (q_Ni[0,:] - q_Ni[self.n-2,:]) - self.Kc * (self.center - self.c[-1,:])
+                    q_dot[self.n-2,:] = self.Kc * (q_Ni[self.n-2,:] - R @ c_Ni[self.n-2,:]) - self.Kg * (q_Ni[0,:] - q_Ni[self.n-2,:])
+                
+        
 
         # Apply control
-        self.q[self.id,:] += q_dot[:] * self.dt
+        self.q += q_dot * self.dt
 
 
     def compute_inter_robot_positions(self, positions):
