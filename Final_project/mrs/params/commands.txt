@@ -31,6 +31,7 @@ python3 bot_initializer.py --nL=2 --nG=2 --shapeL=circle --qGx=0 --qGy=0 --shape
 
 python3 bot_initializer.py --nL=2 --nG=2 --shapeL=circle --qGx=0 --qGy=0 --shapeG=line --qTx=1 --qTy=-1 --dirsF=ips.txt --connF=connections.txt --rotationL=true --rotationG=true --qx=-1 --qy=-1 --idG=0 --idL=1 --uid=1
 
+ssh a876628@155.210.154.200 killall -u a876628; ssh a876628@155.210.154.201 killall -u a876628; ssh a876628@155.210.154.202 killall -u a876628; ssh a876628@155.210.154.203 killall -u a876628; ssh a876628@155.210.154.191 killall -u a876628; ssh a876628@155.210.154.192 killall -u a876628; ssh a876628@155.210.154.193 killall -u a876628; ssh a876628@155.210.154.194 killall -u a876628; ssh a876628@155.210.154.195 killall -u a876628
 
 python3 plotter.py --conn_file=./params/connections.txt --logs_file=./logs/logs.txt --w_height=6 --w_width=6 --bot_size=5
 

@@ -10,7 +10,7 @@ class formation_control:
 
         # ++++++++++++ Custom Properties ++++++++++++
         # Agent dependant
-        self.n = num_agents                             # Number of agents (int)
+        self.n = num_agents +1                          # Number of agents, including the targer (int)
         self.id = id                                    # Id of the current agent (int)
 
 
@@ -19,8 +19,8 @@ class formation_control:
         self.center = shape_center                      # The center of the shape that we want to formate (x,y)
 
         # Poses --> Take care of this!!
-        self.q = np.zeros((self.n+1,2))                 # Current pose (n+1)x(x,y)
-        self.q[:self.n,:] = initial_pose
+        self.q = np.zeros((self.n,2))                 # Current pose (n+1)x(x,y)
+        self.q[:num_agents,:] = initial_pose
         self.q[-1,:] = shape_center
 
         self.c = self.generate_robot_positions()        # Desired pose (n+1)x(x,y)
@@ -39,13 +39,19 @@ class formation_control:
     # Updates all the stored poses
     def update_poses(self,new_q):
         self.q = np.vstack((new_q,self.center)) # NOT sure
+        # self.q[:self.n-1] = new_q
 
     # Updates the center of the formation
     def update_center(self,new_center):
+        # self.q[-1] = new_center
         self.center = new_center
+
+    def get_desired_agent_pose(self):
+        return self.c[self.id,:]
 
     # Enclosing control law (Kabsch algorithm)
     def execute_control(self):
+       
         Q = self.compute_inter_robot_positions(self.q) # Current positions
         C = self.compute_inter_robot_positions(self.c) # Desired relative position between the robots
 
@@ -62,29 +68,29 @@ class formation_control:
         c_Ni = -C[self.n-1::self.n] # Desired distance between the robot and the target
         
         # Compute the control loop
-        q_dot = np.zeros((self.n, 2))
+        q_dot = np.zeros(2)
         # If orbiting control is not selected each of the robot is going to converge to its desired shape position
         if not self.rotate:
-            q_dot[self.id,:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:])
-                
+            q_dot[:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:])
+            
         # If orbiting control is selected each of the robot is going to follow the next robot based on a Control gain (Kg)
         else: 
-            if self.id < self.n-1:
-                q_dot[self.id,:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:]) - self.Kg * (q_Ni[self.id+1,:] - q_Ni[self.id,:]) 
+            if self.id < self.n-2:
+                q_dot[:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:]) - self.Kg * (q_Ni[self.id+1,:] - q_Ni[self.id,:]) 
             else:
-                q_dot[self.n-2,:] = self.Kc * (q_Ni[self.n-2,:] - R @ c_Ni[self.n-2,:]) - self.Kg * (q_Ni[0,:] - q_Ni[self.n-2,:])
-                
+                q_dot[:] = self.Kc * (q_Ni[self.id,:] - R @ c_Ni[self.id,:]) - self.Kg * (q_Ni[0,:] - q_Ni[self.id,:])
+            
 
         # Apply control
-        self.q[self.id,:] += q_dot[self.id,:] * self.dt
+        self.q[self.id,:] += q_dot[:] * self.dt
 
 
     def compute_inter_robot_positions(self, positions):
-
-        rel_pos = np.zeros(((self.n+1)*(self.n+1), 2))
+    
+        rel_pos = np.zeros((self.n*self.n, 2))
         # Compute inter-robot relative positions
-        for i in range(self.n+1):
-            for j in range(self.n+1):
+        for i in range(self.n):
+            for j in range(self.n):
                 #print("Position {} with {}".format(i,j))
                 rel_pos[i + self.n*j, 0] = positions[j,0] - positions[i,0]
                 rel_pos[i + self.n*j, 1] = positions[j,1] - positions[i,1]
@@ -92,39 +98,40 @@ class formation_control:
 
 
     def generate_robot_positions(self):
-        print("construc:",self.shape)
         if self.shape not in ["line", "circle", "grid", "square", "star", "hexagon"]:
             raise ValueError("Invalid shape. Choose from 'line', 'circle', 'grid', 'square', 'star' or 'hexagon'.")
         positions = []
+        num_robots = self.n
+        num_robots -= 1
 
         if self.shape == "line":
             # Place robots in a straight line along the x-axis
-            mid_point = (0 + (self.n - 1)) / 2
-            for i in range(self.n):
+            mid_point = (0 + (num_robots - 1)) / 2
+            for i in range(num_robots):
                 positions.append([i - mid_point, 0])
             
 
         elif self.shape == "circle":
             # Place robots in a circle with radius 1
-            for i in range(self.n):
-                angle = 2 * np.pi * i / self.n
+            for i in range(num_robots):
+                angle = 2 * np.pi * i / num_robots
                 x = np.cos(angle)
                 y = np.sin(angle)
                 positions.append([x, y])
 
         elif self.shape == "grid":
             # Place robots in a grid with roughly equal rows and columns
-            side_length = np.ceil(np.sqrt(self.n))
+            side_length = np.ceil(np.sqrt(num_robots))
             offset = (side_length-1)/2
-            for i in range(self.n):
+            for i in range(num_robots):
                 row = i // side_length
                 col = i % side_length
                 positions.append([col-offset, row-offset])
                 
         elif self.shape == "square":
             # Place robots in a square
-            side_length = np.ceil(self.n/4)
-            for i in range(self.n):
+            side_length = np.ceil(num_robots/4)
+            for i in range(num_robots):
                 if i<side_length:
                     row = 0
                     col = i % side_length
@@ -160,9 +167,9 @@ class formation_control:
             for i in range(len(star_vertices)):
                 positions.append(star_vertices[i])
 
-            if self.n > len(star_vertices):
+            if num_robots > len(star_vertices):
                 # Distribute remaining robots along the edges of the star
-                remaining_robots = self.n - len(star_vertices)
+                remaining_robots = num_robots - len(star_vertices)
                 edges = len(star_vertices)
                 robots_per_edge = remaining_robots // edges
                 extra_robots = remaining_robots % edges
@@ -195,9 +202,9 @@ class formation_control:
                 y = radius * np.sin(angle)
                 positions.append([x, y])
 
-            if self.n > hexagon_points:
+            if num_robots > hexagon_points:
                 # Distribute remaining robots along the edges
-                remaining_robots = self.n - hexagon_points
+                remaining_robots = num_robots - hexagon_points
                 robots_per_edge = remaining_robots // hexagon_points
                 extra_robots = remaining_robots % hexagon_points
                 edge_points = []
@@ -224,7 +231,8 @@ class formation_control:
 
                 positions.extend(edge_points[:remaining_robots])
 
-        # Maybe this is not (0,0) and is the current center position
-        positions.append([0,0])
+        # positions.append([0,0])
+        # return np.array(positions)
+        positions.append([self.center[0], self.center[1]])
         return np.array(positions)
     

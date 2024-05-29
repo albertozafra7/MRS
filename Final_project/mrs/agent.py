@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-from multiprocessing import Process, Value, Array, Lock
 import numpy as np
 import time     # import the time library for the timestamp
 from datetime import datetime
@@ -14,21 +13,25 @@ class agent:
 
         # ++++++++++++ Custom Properties ++++++++++++
         # Constants
+        rotationL=False
+        rotationG=False
         self.uid = uid                                          # Unique identifier of the agent (int)
         self.nL = num_robots                                    # Number of robots in the group (int)
         self.nG = num_groups                                    # Number of groups (int)
         self.idG = idG                                          # Group identifier of the agent (int)
         self.idL = idL                                          # Local identifier of the agent (int)
 
-        # Local properties
-        self.qL = np.zeros((self.nL,3))                         # We generate the initial q array nx(x,y,t)
-        self.qL[idL,:] = np.append(initial_poseL, time.time())  # We add the inital pose of the current agent and its timestamp (x,y,t)
-        self.formationL = formation_control(num_agents=self.nL, id=idL, initial_pose=self.qL[:,:2], shape=shapeL, shape_center=initial_poseG, Kc=KcL, Kg=KgL, dt=dt, rotation=rotationL)
-
         # Global properties
         self.qG = np.zeros((self.nG,3))
         self.qG[idG,:] = np.append(initial_poseG, time.time())
         self.formationG = formation_control(num_agents=self.nG, id=idG, initial_pose=self.qG[:,:2], shape=shapeG, shape_center=initial_poseT, Kc=KcG, Kg=KgG, dt=dt, rotation=rotationG)
+
+        # Local properties
+        self.qL = np.zeros((self.nL,3))                         # We generate the initial q array nx(x,y,t)
+        self.qL[idL,:] = np.append(initial_poseL, time.time())  # We add the inital pose of the current agent and its timestamp (x,y,t)
+        # self.formationL = formation_control(num_agents=self.nL, id=idL, initial_pose=self.qL[:,:2], shape=shapeL, shape_center=self.formationG.get_desired_agent_pose(), Kc=KcL, Kg=KgL, dt=dt, rotation=rotationL)
+        self.formationL = formation_control(num_agents=self.nL, id=idL, initial_pose=self.qL[:,:2], shape=shapeL, shape_center=initial_poseG, Kc=KcL, Kg=KgL, dt=dt, rotation=rotationL)
+
 
         # Target properties
         self.qT = initial_poseT
@@ -56,13 +59,12 @@ class agent:
         while not self.com.finished:
 
             # -------- Global Control -------- 
-            # print("DEB: globP...")
             # We get all the global positions
             qGs = self.com.get_global_positions()
 
             self.qT = qGs[-1,:] # We update the target positions
             self.qG[:,:] = qGs[:self.nG,:]  # We update the group positions
-            
+            # print(self.qG)
             # print("DEB: upC...")
             # We update the global control
             self.formationG.update_center(self.qT[:2])  # We update the center position within the global formation
@@ -82,7 +84,7 @@ class agent:
 
             # We update the local control
             # print("DEB: upC2...")
-            self.formationL.update_center(self.qG[self.idG,:2]) # We update the center position within the local formation
+            # self.formationL.update_center(self.qG[self.idG,:2]) # We update the center position within the local formation
             # print("DEB: upP2...")
             self.formationL.update_poses(self.qL[:,:2])         # We update the agent positions within the local formation 
 
