@@ -145,6 +145,8 @@ class Plotter:
             # Update the figure and do a micro-pause
             plt.draw()
             plt.pause(0.01)
+            if iters == 1:
+                plt.pause(1)
 
 
 if __name__ == "__main__":

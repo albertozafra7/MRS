@@ -1,3 +1,0 @@
-circle,true
-square,false
-star,false
